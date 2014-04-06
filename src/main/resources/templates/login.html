@@ -1,0 +1,27 @@
+<!DOCTYPE html> 
+<html xmlns:th="http://www.thymeleaf.org"> 
+<head> 
+  <meta name="viewport" content="user-scalable=no,width=device-width" />
+  <link rel="stylesheet" href="/webjars/jquery-mobile/1.4.2/jquery.mobile.css" />
+  <script src="/webjars/jquery/2.1.0/jquery.js"></script>
+  <script src="/webjars/jquery-mobile/1.4.2/jquery.mobile.js"></script>
+  <script src="/js/login.js"></script>
+</head> 
+
+<body> 
+
+<div data-role="page" id="login">
+	<p>Welcome! </p>
+	<div th:if="${param.error}" class="alert alert-error">    
+        Sorry! It appears that someone already is using that name. 
+    </div>
+	<span>Please tell me your name:</span>
+	<form th:action="@{/login}" method="post" data-ajax="false">
+		<input type="text" id="username" name="username"/>
+		<input type="hidden" id="password" name="password"/>
+		<button type="submit" id="nameBtn">Ok</button>
+	</form>
+</div> 
+
+</body>
+</html>

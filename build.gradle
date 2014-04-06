@@ -1,0 +1,46 @@
+buildscript {
+    repositories {
+        maven { url "http://repo.spring.io/libs-snapshot" }
+        mavenLocal()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.0.0.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+
+jar {
+    baseName = 'gs-messaging-stomp-websocket'
+    version =  '0.1.0'
+}
+
+repositories {
+    mavenCentral()
+    maven { url "http://repo.spring.io/libs-snapshot" }
+}
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-websocket")
+    compile("org.springframework.boot:spring-boot-starter-security")
+    compile("org.springframework:spring-messaging")
+    compile("org.thymeleaf:thymeleaf-spring4")
+    compile("ch.qos.logback:logback-core:1.1.1")
+    compile("joda-time:joda-time:2.3")
+    
+    compile("org.springframework.boot:spring-boot-starter-data-jpa")
+    compile("com.h2database:h2")
+    
+    testCompile("junit:junit")
+    
+    // WebJars
+    compile 'org.webjars:jquery:2.1.0-2'
+    compile 'org.webjars:jquery-mobile:1.4.2'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.11'
+}
