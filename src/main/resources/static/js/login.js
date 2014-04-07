@@ -19,6 +19,9 @@ $(document).ready(function() {
 	$('#username').on('keyup blur', function(){
 		if (this.value.trim().length == 0) {
 			$('#nameBtn').addClass('ui-disabled');
+		} else if ($('#username').val() == "admin") {
+			$('#password').attr('type', 'password').focus();
+			
 		} else {
 			$('#nameBtn').removeClass('ui-disabled');
 		}

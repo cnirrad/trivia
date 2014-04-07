@@ -3,12 +3,26 @@ $(document).ready(function() {
 	
 
 	
-	var onTriviaMessage = function(message) {
-		var response = document.getElementById('question');
-        var p = document.createElement('p');
-        p.style.wordWrap = 'break-word';
-        p.appendChild(document.createTextNode(message));
-        response.appendChild(p);
+	var onTriviaMessage = function(m) {
+		// Not sure why it needs to be parsed again...
+		var message = JSON.parse(m);
+		
+        var state = message["state"];
+        console.log("State = " +  message["state"]);
+        
+        if (state == 'QUESTION') {
+        	console.log("New question has been given!");
+        	$('#answerAText').text(message.question.optionA);
+        	$('#answerBText').text(message.question.optionB);
+        	$('#answerCText').text(message.question.optionC);
+        	$('#answerDText').text(message.question.optionD);
+        	$('#questionText').text(message.question.text);
+            $.mobile.changePage("#question", { allowSamePageTransition: true });
+        } else if (state == 'WAIT') {
+        	$.mobile.changePage("#waiting", { allowSamePageTransition: true });
+        }
+        
+        
 	}
 	
 	var onConnection = function(frame) {
@@ -24,10 +38,15 @@ $(document).ready(function() {
 		console.log('Connection failed!', error);
 	}
 	
-	var connect = function() {
-		var socket = new SockJS('/trivia');
+	var connect = function(path, headers, onConnection, onError) {
+		var socket = new SockJS(path);
+		
+		socket.onclose = function() {
+			console.log("Socket closed!");
+		}
+		
         stompClient = Stomp.over(socket);            
-        stompClient.connect({}, onConnection);
+        stompClient.connect(headers, onConnection, onError);
 	}
 	
 	connect();

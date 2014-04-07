@@ -16,6 +16,10 @@ public class User {
 	
 	private String token;
 	
+	private boolean admin;
+	
+	private long score;
+	
 	public long getId() {
 		return id;
 	}
@@ -34,6 +38,26 @@ public class User {
 	
 	public void setToken(String token) {
 		this.token = token;
+	}
+	
+	public boolean isAdmin() {
+        return admin;
+    }
+	
+	public void setAdmin(boolean admin) {
+        this.admin = admin;
+    }
+	
+	public long getScore() {
+        return score;
+    }
+	
+	public void setScore(long score) {
+        this.score = score;
+    }
+	
+	public void addScore(long p) {
+	    this.score = this.score + p;
 	}
 	
 	@Override

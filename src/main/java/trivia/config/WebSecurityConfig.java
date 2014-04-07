@@ -55,6 +55,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 			List<GrantedAuthority> grantedAuths = new ArrayList<>();
             grantedAuths.add(new SimpleGrantedAuthority("ROLE_USER"));
+            
+            if (user.isAdmin()) {
+                grantedAuths.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            }
 			Authentication auth = new UsernamePasswordAuthenticationToken(user, user.getToken(), grantedAuths);
 			
             return auth;
@@ -74,6 +78,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+	    // Hate to do this, but disabling just because I don't have enough time to 
+	    // get this working with AJAX requests.
+	    http.csrf().disable();
+	    
 		http.authorizeRequests()
 			.antMatchers("/webjars/**", "/js/**").permitAll()
 			.anyRequest().authenticated();
@@ -87,6 +95,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .permitAll();
 		
 	}
+
 	
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {

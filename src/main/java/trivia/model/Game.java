@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
@@ -31,7 +32,7 @@ public class Game {
     
     private int numSecondsBetweenQuestions;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     private List<Question> questions;
 
     public Game() {
@@ -89,6 +90,10 @@ public class Game {
     public void setNumSecondsBetweenQuestions(int numSecondsBetweenQuestions) {
         this.numSecondsBetweenQuestions = numSecondsBetweenQuestions;
     }
+    
+    public List<Question> getQuestions() {
+        return questions;
+    }
 
     /**
      * Increments the current question and returns the next
@@ -98,7 +103,7 @@ public class Game {
      * @return
      */
     public Question nextQuestion() {
-        if (currentQuestionIdx == questions.size()) {
+        if (currentQuestionIdx == questions.size() - 1) {
             // At the end of the questions
             return null;
         }

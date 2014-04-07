@@ -1,4 +1,4 @@
-package trivia;
+package trivia.controller;
 
 import java.security.Principal;
 
@@ -8,8 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
+import trivia.model.User;
 import trivia.repository.UserRepository;
 import trivia.service.TriviaService;
 
@@ -44,10 +47,19 @@ public class TriviaController {
 		
 		messaging.convertAndSend("/topic/joined", p.getName());
 		
-		triviaService.startGame();
-		
 		return "home";
 	}
 
+    @Secured("ROLE_USER")
+    @RequestMapping(value="/guess/{questionId}/{answer}",method=RequestMethod.POST)
+    public String guess(Principal p, @PathVariable Long questionId, @PathVariable String answer) {
+        logger.debug(p.getName() + " has guessed " + answer + " for question #" + questionId);
+
+        User user = userRepository.findByName(p.getName());
+        
+        triviaService.guess(user, questionId, answer);
+
+        return "home";
+    }
 
 }

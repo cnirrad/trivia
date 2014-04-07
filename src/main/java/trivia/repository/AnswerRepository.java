@@ -1,11 +1,10 @@
 package trivia.repository;
-
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import trivia.model.Game;
+import trivia.model.Answer;
 
 @Repository
-public interface GameRepository extends CrudRepository<Game, Long> {
+public interface AnswerRepository extends CrudRepository<Answer, Long> {
 
 }
