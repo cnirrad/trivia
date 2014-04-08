@@ -114,6 +114,7 @@ public class TriviaService {
             // End of the game!
             //game.setState(State.FINISH);
             game.setCurrentQuestionIdx(0);
+            game.setState(State.QUESTION);
             broadCastGameState();
             nextStateTime = DateTime.now().plus(Period.seconds(game.getNumSecondsPerQuestion()));
         } else {
