@@ -1,7 +1,7 @@
 package trivia.model;
 
+import java.util.ArrayList;
 import java.util.List;
-
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -11,25 +11,21 @@ import javax.persistence.OneToMany;
 
 @Entity
 public class Game {
-    
+
     public enum State {
-        NOT_STARTED,
-        STARTING,
-        QUESTION,
-        WAIT,
-        FINISH
+        NOT_STARTED, STARTING, QUESTION, WAIT, FINISH
     }
 
     @Id
     private long id;
-    
+
     @Enumerated(EnumType.STRING)
     private State state;
-    
+
     private int currentQuestionIdx;
-    
+
     private int numSecondsPerQuestion;
-    
+
     private int numSecondsBetweenQuestions;
 
     @OneToMany(fetch = FetchType.EAGER)
@@ -38,16 +34,16 @@ public class Game {
     public Game() {
         state = State.NOT_STARTED;
     }
-    
+
     public Game(long id) {
         this();
         this.id = id;
     }
-    
+
     public long getId() {
         return id;
     }
-    
+
     public State getState() {
         return state;
     }
@@ -74,7 +70,7 @@ public class Game {
     public void setCurrentQuestionIdx(int currentQuestion) {
         this.currentQuestionIdx = currentQuestion;
     }
-    
+
     public int getNumSecondsPerQuestion() {
         return numSecondsPerQuestion;
     }
@@ -90,14 +86,21 @@ public class Game {
     public void setNumSecondsBetweenQuestions(int numSecondsBetweenQuestions) {
         this.numSecondsBetweenQuestions = numSecondsBetweenQuestions;
     }
-    
+
     public List<Question> getQuestions() {
         return questions;
     }
 
+    public void addQuestion(Question q) {
+        if (questions == null) {
+            questions = new ArrayList<Question>();
+        }
+        questions.add(q);
+    }
+
     /**
      * Increments the current question and returns the next
-     * question in the list. If at the end of the list, a 
+     * question in the list. If at the end of the list, a
      * null will be returned.
      * 
      * @return
@@ -107,9 +110,9 @@ public class Game {
             // At the end of the questions
             return null;
         }
-        
+
         setCurrentQuestionIdx(++currentQuestionIdx);
-        
+
         return questions.get(currentQuestionIdx);
     }
 }

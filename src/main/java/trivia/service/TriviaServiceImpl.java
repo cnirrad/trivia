@@ -67,7 +67,9 @@ public class TriviaServiceImpl implements TriviaService {
      */
     private DateTime questionAskedAt;
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see trivia.service.TriviaService#startGame()
      */
     @Override
@@ -162,6 +164,7 @@ public class TriviaServiceImpl implements TriviaService {
         game.setState(State.WAIT);
         broadCastGameState();
         nextStateTime = DateTime.now().plus(Period.seconds(game.getNumSecondsBetweenQuestions()));
+        gameRepository.save(game);
     }
 
     /**
@@ -179,7 +182,9 @@ public class TriviaServiceImpl implements TriviaService {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see trivia.service.TriviaService#reset()
      */
     @Override
@@ -193,23 +198,18 @@ public class TriviaServiceImpl implements TriviaService {
         return gameRepository.save(game);
     }
 
-    /* (non-Javadoc)
-     * @see trivia.service.TriviaService#getGame()
-     */
-    @Override
-    public Game getGame() {
-        if (game == null) {
-            game = gameRepository.findOne(1L);
-        }
-
-        return game;
-    }
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see trivia.service.TriviaService#guess(trivia.model.User, java.lang.Long, java.lang.String)
      */
     @Override
     public void guess(User user, Long questionId, String answer) {
+        if (questionAskedAt == null || game == null) {
+            // No question has been asked
+            return;
+        }
+
         Interval guessInterval = new Interval(questionAskedAt, DateTime.now());
         Question q = game.getCurrentQuestion();
 
@@ -232,6 +232,28 @@ public class TriviaServiceImpl implements TriviaService {
         return 5;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see trivia.service.TriviaService#getGame()
+     */
+    @Override
+    public Game getGame() {
+        if (game == null) {
+            game = gameRepository.findOne(1L);
+        }
+
+        return game;
+    }
+
+    public DateTime getNextStateTime() {
+        return nextStateTime;
+    }
+
+    public DateTime getQuestionAskedAt() {
+        return questionAskedAt;
+    }
+
     public void setGameRepository(GameRepository gameRepository) {
         this.gameRepository = gameRepository;
     }
@@ -242,6 +264,10 @@ public class TriviaServiceImpl implements TriviaService {
 
     public void setUserRepository(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    public void setMessagingTemplate(SimpMessagingTemplate messagingTemplate) {
+        this.messaging = messagingTemplate;
     }
 
 }
