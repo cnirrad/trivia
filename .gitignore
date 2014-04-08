@@ -1,8 +1,10 @@
 bin/
 build/
 gradle/
+target/
 .classpath
 .gradle/
 .project
 .settings/
 
+/target

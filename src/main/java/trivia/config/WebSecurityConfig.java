@@ -53,7 +53,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 					logger.debug(authentication.getName() + " has logged back in.");
 				}
 			}
-			List<GrantedAuthority> grantedAuths = new ArrayList<>();
+			List<GrantedAuthority> grantedAuths = new ArrayList<GrantedAuthority>();
             grantedAuths.add(new SimpleGrantedAuthority("ROLE_USER"));
             
             if (user.isAdmin()) {

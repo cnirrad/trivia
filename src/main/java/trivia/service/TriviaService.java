@@ -142,7 +142,7 @@ public class TriviaService {
             
             messaging.convertAndSend("/topic/trivia",
                     mapper.writeValueAsString(m));
-        } catch (MessagingException | JsonProcessingException e) {
+        } catch (Exception e) {
             logger.warn("Exception on sending a TriviaMessage", e);
         }
     }
