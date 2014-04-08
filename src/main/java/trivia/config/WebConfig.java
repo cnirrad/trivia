@@ -10,14 +10,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @PropertySource("classpath:application.properties")
 @EnableWebMvc
 public class WebConfig extends WebMvcConfigurerAdapter {
-	
-	  @Override
-	  public void addResourceHandlers(ResourceHandlerRegistry registry) {
-	    registry.addResourceHandler("*.html").addResourceLocations("classpath:/static/");
-	    registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
-	    registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
-	  }
-	  
-	  
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("*.html").addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
+        registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
+    }
 
 }
