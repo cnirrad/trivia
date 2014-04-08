@@ -1,6 +1,7 @@
 package trivia.service;
 
 import trivia.model.Game;
+import trivia.model.GameEntity;
 import trivia.model.User;
 
 public interface TriviaService {
@@ -22,12 +23,12 @@ public interface TriviaService {
      * 
      * @return
      */
-    public abstract Game reset();
+    public abstract GameEntity reset();
 
     /**
      * Returns the game object.
      * 
-     * @return the game object (from memory, if present, otherwise will read from the database).
+     * @return the game state.
      */
     public abstract Game getGame();
 

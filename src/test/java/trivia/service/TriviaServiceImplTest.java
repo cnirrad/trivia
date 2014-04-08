@@ -17,8 +17,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import trivia.exception.GameAlreadyStartedException;
 import trivia.model.Answer;
-import trivia.model.Game;
-import trivia.model.Game.State;
+import trivia.model.GameEntity;
+import trivia.model.GameEntity.State;
 import trivia.model.User;
 import trivia.repository.AnswerRepository;
 import trivia.repository.GameRepository;
@@ -59,7 +59,7 @@ public class TriviaServiceImplTest {
 
     @Test
     public void testStart() {
-        Game g = DataFactory.createGameWithQuestions();
+        GameEntity g = DataFactory.createGameWithQuestions();
         when(gameRepository.findOne(anyLong())).thenReturn(g);
 
         service.startGame();
@@ -70,7 +70,7 @@ public class TriviaServiceImplTest {
 
     @Test(expected = GameAlreadyStartedException.class)
     public void testStartWhenAlreadyStarted() {
-        Game g = DataFactory.createGameWithQuestions();
+        GameEntity g = DataFactory.createGameWithQuestions();
         g.setState(State.QUESTION);
         when(gameRepository.findOne(anyLong())).thenReturn(g);
 
@@ -79,7 +79,7 @@ public class TriviaServiceImplTest {
 
     @Test(expected = IllegalStateException.class)
     public void testStartWithoutQuestions() {
-        Game g = DataFactory.createGame();
+        GameEntity g = DataFactory.createGame();
         when(gameRepository.findOne(anyLong())).thenReturn(g);
 
         service.startGame();
@@ -87,7 +87,7 @@ public class TriviaServiceImplTest {
 
     @Test
     public void testReset() {
-        Game g = DataFactory.createGameWithQuestions();
+        GameEntity g = DataFactory.createGameWithQuestions();
         g.setCurrentQuestionIdx(2);
         when(gameRepository.findOne(anyLong())).thenReturn(g);
 
@@ -100,7 +100,7 @@ public class TriviaServiceImplTest {
 
     @Test
     public void testPresentNextQuestion() {
-        Game g = DataFactory.createGameWithQuestions();
+        GameEntity g = DataFactory.createGameWithQuestions();
         g.setState(State.WAIT);
         when(gameRepository.findOne(anyLong())).thenReturn(g);
 
@@ -110,8 +110,8 @@ public class TriviaServiceImplTest {
         service.presentNextQuestion();
 
         assertEquals("State should be QUESTION.", State.QUESTION, g.getState());
-        assertNotNull("Question asked at time should not be null.", service.getQuestionAskedAt());
-        assertNotNull("Next state time should not be null.", service.getNextStateTime());
+        assertNotNull("Question asked at time should not be null.", service.getGame().getQuestionAskedAt());
+        assertNotNull("Next state time should not be null.", service.getGame().getNextStateTime());
 
         verify(messagingTemplate).convertAndSend(eq("/topic/trivia"), any());
         verify(gameRepository).save(eq(g));
@@ -119,7 +119,7 @@ public class TriviaServiceImplTest {
 
     @Test
     public void testPresentWaitForQuestion() {
-        Game g = DataFactory.createGameWithQuestions();
+        GameEntity g = DataFactory.createGameWithQuestions();
         g.setState(State.QUESTION);
         when(gameRepository.findOne(anyLong())).thenReturn(g);
 
@@ -129,7 +129,7 @@ public class TriviaServiceImplTest {
         service.presentWaitForQuestion();
 
         assertEquals("State should be WAIT.", State.WAIT, g.getState());
-        assertNotNull("Next state time should not be null.", service.getNextStateTime());
+        assertNotNull("Next state time should not be null.", service.getGame().getNextStateTime());
 
         verify(messagingTemplate).convertAndSend(eq("/topic/trivia"), any());
         verify(gameRepository).save(eq(g));
@@ -137,7 +137,7 @@ public class TriviaServiceImplTest {
 
     @Test
     public void testGuessCorrect() {
-        Game g = DataFactory.createGameWithQuestions();
+        GameEntity g = DataFactory.createGameWithQuestions();
         g.setState(State.WAIT);
         when(gameRepository.findOne(anyLong())).thenReturn(g);
 
@@ -162,7 +162,7 @@ public class TriviaServiceImplTest {
 
     @Test
     public void testGuessInCorrect() {
-        Game g = DataFactory.createGameWithQuestions();
+        GameEntity g = DataFactory.createGameWithQuestions();
         g.setState(State.WAIT);
         when(gameRepository.findOne(anyLong())).thenReturn(g);
 

@@ -4,6 +4,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.joda.time.Period;
+import org.joda.time.Seconds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +12,11 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import trivia.exception.GameAlreadyStartedException;
-import trivia.messages.TriviaMessage;
+import trivia.messages.Message;
 import trivia.model.Answer;
 import trivia.model.Game;
-import trivia.model.Game.State;
+import trivia.model.GameEntity;
+import trivia.model.GameEntity.State;
 import trivia.model.Question;
 import trivia.model.User;
 import trivia.repository.AnswerRepository;
@@ -55,18 +57,6 @@ public class TriviaServiceImpl implements TriviaService {
      */
     private Game game;
 
-    /**
-     * The time at which the game should transition to the next state.
-     */
-    private DateTime nextStateTime;
-
-    /**
-     * The time at which the current question was broadcast to the users. This is used to figure
-     * out how fast a user answered the question, which is then used to determine how many points
-     * to award for a correct answer.
-     */
-    private DateTime questionAskedAt;
-
     /*
      * (non-Javadoc)
      * 
@@ -74,7 +64,7 @@ public class TriviaServiceImpl implements TriviaService {
      */
     @Override
     public Game startGame() {
-        this.game = gameRepository.findOne(1L);
+        this.game = getGame();
         if (game == null) {
             throw new IllegalStateException("No game found in database.");
         }
@@ -88,7 +78,7 @@ public class TriviaServiceImpl implements TriviaService {
         }
 
         game.setState(State.STARTING);
-        gameRepository.save(game);
+        gameRepository.save(game.getEntity());
         return game;
     }
 
@@ -102,12 +92,12 @@ public class TriviaServiceImpl implements TriviaService {
             return;
         }
 
-        if (nextStateTime == null) {
+        if (game.getNextStateTime() == null) {
             // Better present a question, eh?
             presentNextQuestion();
         } else {
 
-            if (DateTime.now().isAfter(nextStateTime)) {
+            if (DateTime.now().isAfter(game.getNextStateTime())) {
                 goToNextState();
             }
         }
@@ -145,16 +135,16 @@ public class TriviaServiceImpl implements TriviaService {
             game.setCurrentQuestionIdx(0);
             game.setState(State.QUESTION);
             broadCastGameState();
-            nextStateTime = DateTime.now().plus(Period.seconds(game.getNumSecondsPerQuestion()));
+            game.setNextStateTime(DateTime.now().plus(Period.seconds(game.getNumSecondsPerQuestion())));
         } else {
             // Broadcast the question
             game.setState(State.QUESTION);
             broadCastGameState();
-            nextStateTime = DateTime.now().plus(Period.seconds(game.getNumSecondsPerQuestion()));
+            game.setNextStateTime(DateTime.now().plus(Period.seconds(game.getNumSecondsPerQuestion())));
         }
-        questionAskedAt = DateTime.now();
+        game.setQuestionAskedAt(DateTime.now());
 
-        gameRepository.save(game);
+        gameRepository.save(game.getEntity());
     }
 
     /**
@@ -163,8 +153,8 @@ public class TriviaServiceImpl implements TriviaService {
     protected void presentWaitForQuestion() {
         game.setState(State.WAIT);
         broadCastGameState();
-        nextStateTime = DateTime.now().plus(Period.seconds(game.getNumSecondsBetweenQuestions()));
-        gameRepository.save(game);
+        game.setNextStateTime(DateTime.now().plus(Period.seconds(game.getNumSecondsBetweenQuestions())));
+        gameRepository.save(game.getEntity());
     }
 
     /**
@@ -172,7 +162,7 @@ public class TriviaServiceImpl implements TriviaService {
      */
     protected void broadCastGameState() {
         try {
-            TriviaMessage m = TriviaMessage.fromGame(game);
+            Message m = Message.fromGame(game);
 
             logger.debug("Broadcasting to /topic/trivia: " + m);
 
@@ -188,14 +178,14 @@ public class TriviaServiceImpl implements TriviaService {
      * @see trivia.service.TriviaService#reset()
      */
     @Override
-    public Game reset() {
+    public GameEntity reset() {
         if (game == null) {
-            game = gameRepository.findOne(1L);
+            game = getGame();
         }
         game.setState(State.NOT_STARTED);
         game.setCurrentQuestionIdx(0);
 
-        return gameRepository.save(game);
+        return gameRepository.save(game.getEntity());
     }
 
     /*
@@ -205,20 +195,27 @@ public class TriviaServiceImpl implements TriviaService {
      */
     @Override
     public void guess(User user, Long questionId, String answer) {
-        if (questionAskedAt == null || game == null) {
-            // No question has been asked
+        if (game == null || game.getQuestionAskedAt() == null) {
+            logger.warn("Users guessing when no question was asked or no game in progress: " + user);
             return;
         }
 
-        Interval guessInterval = new Interval(questionAskedAt, DateTime.now());
+        Interval guessInterval = new Interval(game.getQuestionAskedAt(), DateTime.now());
         Question q = game.getCurrentQuestion();
 
         if (q.getId() != questionId) {
+            logger.warn(user.toString() + " is answering the wrong question!");
             return;
         }
         Duration guessedIn = guessInterval.toDuration();
 
-        if (q.getCorrectAnswer().equals(answer)) {
+        // Did they guess in the allotted time?
+        if (guessedIn.isLongerThan(Seconds.seconds(game.getNumSecondsPerQuestion()).toStandardDuration())) {
+            logger.debug("Oops, " + user + " didn't answer within " + game.getNumSecondsPerQuestion() + "seconds.");
+            return;
+        }
+
+        if (q.getCorrectAnswer().equalsIgnoreCase(answer)) {
             int score = score(guessedIn);
             user.addScore(score);
             userRepository.save(user);
@@ -229,6 +226,7 @@ public class TriviaServiceImpl implements TriviaService {
     }
 
     private int score(Duration d) {
+        // TODO: Determine how many points to assign based on how long it took them to answer.
         return 5;
     }
 
@@ -240,18 +238,14 @@ public class TriviaServiceImpl implements TriviaService {
     @Override
     public Game getGame() {
         if (game == null) {
-            game = gameRepository.findOne(1L);
+            GameEntity e = gameRepository.findOne(1L);
+            if (e == null) {
+                throw new IllegalStateException("No game found in database.");
+            }
+            game = new Game(e);
         }
 
         return game;
-    }
-
-    public DateTime getNextStateTime() {
-        return nextStateTime;
-    }
-
-    public DateTime getQuestionAskedAt() {
-        return questionAskedAt;
     }
 
     public void setGameRepository(GameRepository gameRepository) {

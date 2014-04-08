@@ -1,31 +1,17 @@
 package trivia.messages;
 
-import trivia.model.Game;
 import trivia.model.Question;
 
-public class TriviaMessage {
+/**
+ * A {@link Message} that will present a new question to the users.
+ */
+public class TriviaMessage extends Message {
 
-    private Game.State state;
-    
     private Question question;
-    
-    public TriviaMessage() {
-        
-    }
-    
-    public static TriviaMessage fromGame(Game g) {
-        TriviaMessage m = new TriviaMessage();
-        m.question = g.getCurrentQuestion();
-        m.state = g.getState();
-        return m;
-    }
 
-    public Game.State getState() {
-        return state;
-    }
-
-    public void setState(Game.State state) {
-        this.state = state;
+    public TriviaMessage(Question q) {
+        super("QUESTION");
+        question = q;
     }
 
     public Question getQuestion() {
@@ -35,9 +21,9 @@ public class TriviaMessage {
     public void setQuestion(Question question) {
         this.question = question;
     }
-    
+
     @Override
     public String toString() {
-        return "TriviaMessage[state=" + state + ",question=" + question + "]";
+        return "TriviaMessage[question=" + question + "]";
     }
 }

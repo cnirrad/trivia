@@ -1,22 +1,22 @@
 package trivia.test;
 
-import trivia.model.Game;
-import trivia.model.Game.State;
+import trivia.model.GameEntity;
+import trivia.model.GameEntity.State;
 import trivia.model.Question;
 import trivia.model.User;
 
 public class DataFactory {
 
-    public static Game createGame() {
-        Game g = new Game(1L);
+    public static GameEntity createGame() {
+        GameEntity g = new GameEntity(1L);
         g.setState(State.NOT_STARTED);
         g.setNumSecondsBetweenQuestions(10);
         g.setNumSecondsPerQuestion(10);
         return g;
     }
 
-    public static Game createGameWithQuestions() {
-        Game g = createGame();
+    public static GameEntity createGameWithQuestions() {
+        GameEntity g = createGame();
 
         for (int i = 0; i < 10; ++i) {
             g.addQuestion(createQuestion(i + 1));

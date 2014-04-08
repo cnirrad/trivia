@@ -1,101 +1,70 @@
 package trivia.model;
 
-import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import org.joda.time.DateTime;
+import trivia.model.GameEntity.State;
 
-@Entity
 public class Game {
 
-    public enum State {
-        NOT_STARTED, STARTING, QUESTION, WAIT, FINISH
+    /**
+     * The game state that is persisted to the database.
+     */
+    private GameEntity entity;
+
+    /**
+     * The time at which the game should transition to the next state.
+     */
+    private DateTime nextStateTime;
+
+    /**
+     * The time at which the current question was broadcast to the users. This is used to figure
+     * out how fast a user answered the question, which is then used to determine how many points
+     * to award for a correct answer.
+     */
+    private DateTime questionAskedAt;
+
+    public Game(GameEntity entity) {
+        this.entity = entity;
     }
 
-    @Id
-    private long id;
-
-    @Enumerated(EnumType.STRING)
-    private State state;
-
-    private int currentQuestionIdx;
-
-    private int numSecondsPerQuestion;
-
-    private int numSecondsBetweenQuestions;
-
-    @OneToMany(fetch = FetchType.EAGER)
-    private List<Question> questions;
-
-    public Game() {
-        state = State.NOT_STARTED;
+    public GameEntity getEntity() {
+        return entity;
     }
 
-    public Game(long id) {
-        this();
-        this.id = id;
+    public void setEntity(GameEntity entity) {
+        this.entity = entity;
     }
 
-    public long getId() {
-        return id;
+    public DateTime getNextStateTime() {
+        return nextStateTime;
     }
 
-    public State getState() {
-        return state;
+    public void setNextStateTime(DateTime nextStateTime) {
+        this.nextStateTime = nextStateTime;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public DateTime getQuestionAskedAt() {
+        return questionAskedAt;
     }
 
-    public boolean isStarted() {
-        return state != State.NOT_STARTED;
-    }
-
-    public void setState(State started) {
-        this.state = started;
-    }
-
-    public Question getCurrentQuestion() {
-        if (currentQuestionIdx >= 0 && currentQuestionIdx < questions.size()) {
-            return questions.get(currentQuestionIdx);
-        }
-        return null;
-    }
-
-    public void setCurrentQuestionIdx(int currentQuestion) {
-        this.currentQuestionIdx = currentQuestion;
-    }
-
-    public int getNumSecondsPerQuestion() {
-        return numSecondsPerQuestion;
-    }
-
-    public void setNumSecondsPerQuestion(int numSecondsPerQuestion) {
-        this.numSecondsPerQuestion = numSecondsPerQuestion;
-    }
-
-    public int getNumSecondsBetweenQuestions() {
-        return numSecondsBetweenQuestions;
-    }
-
-    public void setNumSecondsBetweenQuestions(int numSecondsBetweenQuestions) {
-        this.numSecondsBetweenQuestions = numSecondsBetweenQuestions;
+    public void setQuestionAskedAt(DateTime questionAskedAt) {
+        this.questionAskedAt = questionAskedAt;
     }
 
     public List<Question> getQuestions() {
-        return questions;
+        return entity.getQuestions();
     }
 
-    public void addQuestion(Question q) {
-        if (questions == null) {
-            questions = new ArrayList<Question>();
-        }
-        questions.add(q);
+    public boolean isStarted() {
+        return entity.getState() != State.NOT_STARTED;
+    }
+
+    public void setState(State state) {
+        entity.setState(state);
+    }
+
+    public State getState() {
+        return entity.getState();
     }
 
     /**
@@ -106,13 +75,31 @@ public class Game {
      * @return
      */
     public Question nextQuestion() {
-        if (currentQuestionIdx == questions.size() - 1) {
+        int currentQuestionIdx = entity.getCurrentQuestionIdx();
+        if (currentQuestionIdx == getQuestions().size() - 1) {
             // At the end of the questions
             return null;
         }
 
         setCurrentQuestionIdx(++currentQuestionIdx);
 
-        return questions.get(currentQuestionIdx);
+        return getQuestions().get(currentQuestionIdx);
     }
+
+    public void setCurrentQuestionIdx(int i) {
+        entity.setCurrentQuestionIdx(i);
+    }
+
+    public int getNumSecondsPerQuestion() {
+        return entity.getNumSecondsPerQuestion();
+    }
+
+    public int getNumSecondsBetweenQuestions() {
+        return entity.getNumSecondsBetweenQuestions();
+    }
+
+    public Question getCurrentQuestion() {
+        return entity.getCurrentQuestion();
+    }
+
 }
