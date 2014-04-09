@@ -1,7 +1,7 @@
 package trivia.service;
 
+import java.io.IOException;
 import java.util.List;
-
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import trivia.exception.GameAlreadyStartedException;
 import trivia.messages.GuessResponseMessage;
 import trivia.messages.Message;
@@ -26,7 +25,6 @@ import trivia.model.User;
 import trivia.repository.AnswerRepository;
 import trivia.repository.GameRepository;
 import trivia.repository.UserRepository;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -55,6 +53,9 @@ public class TriviaServiceImpl implements TriviaService {
     @Autowired
     private SimpMessagingTemplate messaging;
 
+    @Autowired
+    private SeedDataService seedData;
+
     private ObjectMapper mapper = new ObjectMapper();
 
     /**
@@ -75,7 +76,7 @@ public class TriviaServiceImpl implements TriviaService {
         }
 
         if (game.getQuestions() == null) {
-            throw new IllegalStateException("No questions found.");
+            throw new IllegalStateException("No questions found in database.");
         }
 
         if (game.isStarted()) {
@@ -94,10 +95,10 @@ public class TriviaServiceImpl implements TriviaService {
     protected void runGame() {
         if (game == null || !game.isStarted()) {
             // Game is not in progress
-            
+
             // TEMP: start the game for easier testing
             startGame();
-            //return;
+            // return;
         }
 
         if (game.getNextStateTime() == null) {
@@ -160,10 +161,10 @@ public class TriviaServiceImpl implements TriviaService {
      */
     protected void presentWaitForQuestion() {
         game.setState(State.WAIT);
-        
+
         List<Answer> answers = answerRepository.findByQuestion(game.getCurrentQuestion());
         game.setAnswers(answers);
-        
+
         broadCastGameState();
         game.setNextStateTime(DateTime.now().plus(Period.seconds(game.getNumSecondsBetweenQuestions())));
         gameRepository.save(game.getEntity());
@@ -237,7 +238,7 @@ public class TriviaServiceImpl implements TriviaService {
 
         Answer a = new Answer(q, user, guessedIn.getMillis(), answer);
         answerRepository.save(a);
-        
+
         return response;
     }
 
@@ -256,7 +257,13 @@ public class TriviaServiceImpl implements TriviaService {
         if (game == null) {
             GameEntity e = gameRepository.findOne(1L);
             if (e == null) {
-                throw new IllegalStateException("No game found in database.");
+                try {
+                    seedData.load();
+
+                    e = gameRepository.findOne(1L);
+                } catch (IOException e1) {
+                    logger.error("Failed to load seed data.", e1);
+                }
             }
             game = new Game(e);
         }
