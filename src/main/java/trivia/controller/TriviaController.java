@@ -1,20 +1,17 @@
 package trivia.controller;
 
 import java.security.Principal;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
+import org.springframework.web.servlet.ModelAndView;
 import trivia.messages.GuessRequestMessage;
 import trivia.messages.GuessResponseMessage;
 import trivia.model.User;
@@ -54,12 +51,17 @@ public class TriviaController {
      */
     @Secured("ROLE_USER")
     @RequestMapping("/")
-    public String trivia(Principal p) {
+    public ModelAndView trivia(Principal p) {
         logger.debug(p.getName() + " has hit the home page.");
+
+        User u = userRepository.findByName(p.getName());
 
         messaging.convertAndSend("/topic/joined", p.getName());
 
-        return "home";
+        ModelAndView mav = new ModelAndView("index");
+        mav.addObject("user", u);
+
+        return mav;
     }
 
     /**
@@ -74,8 +76,9 @@ public class TriviaController {
      * @return the status
      */
     @Secured("ROLE_USER")
-    @RequestMapping(value = "/guess", method=RequestMethod.POST)
-    public @ResponseBody GuessResponseMessage guess(Principal p, @RequestBody GuessRequestMessage msg) {
+    @RequestMapping(value = "/guess", method = RequestMethod.POST)
+    public @ResponseBody
+    GuessResponseMessage guess(Principal p, @RequestBody GuessRequestMessage msg) {
         logger.debug(p.getName() + " has guessed " + msg.getGuess() + " for question #" + msg.getQuestionNumber());
 
         User user = userRepository.findByName(p.getName());

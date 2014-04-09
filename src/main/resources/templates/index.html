@@ -1,0 +1,117 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org" ng-app="triviaApp">
+	<head>
+	    <meta charset="utf-8" />
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	    <meta name="viewport" content="width=device-width, initial-scale=1" />
+	    <meta name="description" content="a trivia game" />
+	    <meta name="author" content="Darrin Collins" />
+	
+	    <title>Trivia</title>
+	
+	    <!-- Bootstrap core CSS -->
+	    <link href="webjars/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"></link>
+	
+	    <!-- Custom styles for this template -->
+	<!--     <link href="starter-template.css" rel="stylesheet"> -->
+	
+	    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	    <!--[if lt IE 9]>
+	      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	    <![endif]-->
+	  <style type="text/css">
+		body {
+			padding-top: 50px;
+		}
+		
+		.starter-template {
+			padding: 40px 15px;
+			text-align: center;
+		}
+      </style>
+  </head>
+
+  <body ng-controller="AppCtrl">
+
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Trivia</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li th:if="${user.isAdmin()}"><a href="/admin/">Admin</a></li>
+            <li><a href="/logout">Quit</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+    
+    <div class="container" ng-show="game.state == 'NOT_STARTED'">
+
+       <h2>Welcome, <span th:text="${user.getName()}">friend</span>!</h2>
+	   <h4>The game will start shortly. Be ready!</h4>
+    </div>
+
+    <div class="container" ng-show="game.state == 'QUESTION'">
+
+      <div>
+        <h1>{{msg.question.text}}</h1>
+        <button type="button" ng-click="makeGuess('A')" class="btn btn-primary btn-lg btn-block">{{msg.question.optionA}}</button>
+        <button type="button" ng-click="makeGuess('B')" class="btn btn-primary btn-lg btn-block">{{msg.question.optionB}}</button>
+        <button type="button" ng-click="makeGuess('C')" class="btn btn-primary btn-lg btn-block">{{msg.question.optionC}}</button>
+        <button type="button" ng-click="makeGuess('D')" class="btn btn-primary btn-lg btn-block">{{msg.question.optionD}}</button>
+      </div>
+
+    </div>
+    
+    <div class="container" ng-show="game.state == 'GUESSED'">
+    	<h4>You have guessed {{guessToQuestionText(game.lastGuess.guess)}}. Let's see if you were right...</h4>
+    </div>
+
+    <div class="container" ng-show="game.state == 'WAIT'">
+
+		<div ng-show="game.lastGuess == null">
+			<div ng-show="question != null">Sorry! Your time is up. The
+				correct answer was {{game.correctAnswer}}.</div>
+			<div>Waiting for the next question....</div>
+		</div>
+		<div ng-show="game.lastGuess.correct">Good Job! You guessed the
+			correct answer in {{game.lastGuess.responseTime}} ms.</div>
+		<div ng-show="game.lastGuess.correct == false">Oh, too bad. You
+			guessed incorrectly. The correct answer was {{game.correctAnswer}}.</div>
+		<div ng-show="msg.guesses">
+
+	    <div id="chart" style="width: 400px; height: 400px;"></div>
+
+		</div>
+	</div>
+	
+	<div class="container" ng-show="game.state == 'FINISHED'">
+	</div>
+	
+	<div class="container" ng-show="game.state == 'ERROR'">
+    	<div class="alert alert-danger">{{game.error}}</div>
+    </div>
+	
+    <!-- ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+	<script src="/webjars/jquery/2.1.0/jquery.js"></script>
+	<script src="/webjars/angularjs/1.3.0-beta.4/angular.js"></script>
+
+	<script src="/js/sockjs-0.3.4.js"></script>
+	<script src="/js/stomp.js"></script>
+	<script src="js/controllers.js"></script>
+	<script src="js/app.js"></script>
+	<script src="js/flotr2.min.js"></script>
+
+	<script src="webjars/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+
+</body></html>

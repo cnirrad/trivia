@@ -1,66 +1,46 @@
 var triviaControllers = angular.module('triviaControllers', ['wsStomp']);
 
-triviaControllers.controller('AppCtrl', function($scope, $log, $http, wsStompService) {
+triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document, wsStompService) {
 	
 	$scope.game = {state: 'NOT_STARTED'};
-	
-	$scope.dataSource =  [
-	                                      { country: 'Africa', area: 20.2 },
-	                                      { country: 'Antarctica', area: 8.9 },
-	                                      { country: 'Asia', area: 30 },
-	                                      { country: 'Australia', area: 5.3 },
-	                                      { country: 'Europe', area: 6.7 },
-	                                      { country: 'North America', area: 16.5 },
-	                                      { country: 'South America', area: 12 }
-	                                  ];
-	
+		
 	$scope.onMessage = function(msg) {
     	$scope.msg = JSON.parse(JSON.parse(msg.body));
     	
     	if ($scope.msg.type == 'WAIT') {
     		//$(".app").pagecontainer("change", "#wait", { transition: 'slide' });
     		
-//    		var data = [{option: $scope.msg.question.optionA, num: $scope.msg.guesses[0]},
-//    	    		                 {option: $scope.msg.question.optionB, num: $scope.msg.guesses[1]},
-//    					    		 {option: $scope.msg.question.optionC, num: $scope.msg.guesses[2]},
-//    					             {option: $scope.msg.question.optionD, num: $scope.msg.guesses[3]}];
+    		var data = [{option: $scope.msg.question.optionA, num: $scope.msg.guesses[0]},
+    	    		                 {option: $scope.msg.question.optionB, num: $scope.msg.guesses[1]},
+    					    		 {option: $scope.msg.question.optionC, num: $scope.msg.guesses[2]},
+    					             {option: $scope.msg.question.optionD, num: $scope.msg.guesses[3]}];
     		
-    		var data = [[ $scope.msg.question.optionA, $scope.msg.guesses[0] ],
-		                 [$scope.msg.question.optionB,  $scope.msg.guesses[1]],
-			    		 [$scope.msg.question.optionC,  $scope.msg.guesses[2]],
-			             [$scope.msg.question.optionD,  $scope.msg.guesses[3]]];
-//    		
-//    		$.jqplot('chart', data, {
-//    			title: 'Guesses',
-//    			seriesDefaults: {
-//		          shadow: false, 
-//		          renderer: jQuery.jqplot.PieRenderer, 
-//		          rendererOptions: { 
-//		            sliceMargin: 4, 
-//		            showDataLabels: true
-//		          } 
-//		        }, 
-//		        legend: { show:true, location: 'e' }
-//    		});
-    		$.jqplot('chart',  [[[1, 2],[3,5.12],[5,13.1],[7,33.6],[9,85.9],[11,219.9]]]);
+//    		var data = [[ $scope.msg.question.optionA, $scope.msg.guesses[0] ],
+//		                 [$scope.msg.question.optionB,  $scope.msg.guesses[1]],
+//			    		 [$scope.msg.question.optionC,  $scope.msg.guesses[2]],
+//			             [$scope.msg.question.optionD,  $scope.msg.guesses[3]]];
+    		$scope.game.state = 'WAIT';
     		
-    		$.mobile.changePage('#wait');
+//    		$.mobile.changePage('#wait');
     	} else if ($scope.msg.type == 'QUESTION') {
-    		// changePage is deprecated, but using pagecontainer is causing me issues
-    		//$(".app").pagecontainer("change", "#question", { transition: 'slide' });
-    		
     		// clear the last guess
     		$scope.game.lastGuess = null;
     		
     		$scope.question = $scope.msg.question;
     		$scope.game.correctAnswer = $scope.guessToQuestionText($scope.msg.question.correctAnswer);
-    		$.mobile.changePage('#question');
+    		
+    		$scope.game.state = 'QUESTION';
     	} else if ($scope.msg.type == 'GUESS') {
     		// Don't show them yet, just save this off for when we get the WAIT message.
     		$scope.game.lastGuess = msg;
+    		$scope.game.state = 'GUESSED';
     	}
     	
     	$scope.$apply();
+    	
+    	if ($scope.game.state == 'WAIT') {
+    		$scope.drawGraph();
+    	}
 	}
 	
 	$scope.makeGuess = function(guess) {
@@ -77,9 +57,9 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, wsStompSer
 			// Mark it as correct if the guess is equal to the correct answer AND 
 			// the server recognized it as correct (and sent in time) by giving us points.
 			$scope.game.lastGuess.correct = (guess == $scope.question.correctAnswer && response.points > 0);
+			$scope.game.state = 'GUESSED';
 		});
 		
-		$.mobile.changePage('#alreadyGuessed');
 	}
 	
 	$scope.guessToQuestionText = function(guess) {
@@ -98,20 +78,50 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, wsStompSer
 	
 	$scope.onConnection = function(frame) {
         //setConnected(true);
-		$scope.game.state = 'CONNECTED';
-		$scope.$apply();
+		//$scope.game.state = 'CONNECTED';
+		//$scope.$apply();
         wsStompService.subscribe('/topic/trivia', $scope.onMessage);
 	}
 	
 	$scope.onClose = function(error) {
 		// TODO: Tell the user!
-		$scope.game.state = 'DISCONNECTED';
-		$.mobile.changePage('#errorPanel');
+		$scope.game.state = 'ERROR';
+		$scope.game.error = 'You have been disconnected!';
 	}
-	$( ".app" ).pagecontainer({ defaults: true });
 	
 	// Start the STOMP service
 	wsStompService.connect('/trivia', {}, $scope.onConnection, $scope.onClose);
+	
+	$scope.drawGraph = function() {
+		var data =  [{data: [[0, $scope.msg.guesses[0]]], label: $scope.msg.question.optionA},
+	                 {data: [[0, $scope.msg.guesses[1]]], label: $scope.msg.question.optionB},
+	                 {data: [[0, $scope.msg.guesses[2]]], label: $scope.msg.question.optionC},
+	                 {data: [[0, $scope.msg.guesses[3]]], label: $scope.msg.question.optionD}
+	                ];
+		
+		// Explode the piece representing the correct answer
+		var correctAnswerIdx = $scope.msg.question.correctAnswer.charCodeAt(0) - 'A'.charCodeAt(0);
+		data[correctAnswerIdx].pie = { explode: 20 };
+		
+		var graph = Flotr.draw($('#chart').get(0), data,{
+	    			HtmlText : false,
+	    		    grid : {
+	    		      verticalLines : false,
+	    		      horizontalLines : false
+	    		    },
+	    		    xaxis : { showLabels : false },
+	    		    yaxis : { showLabels : false },
+	    		    pie : {
+	    		      show : true, 
+	    		      explode : 2
+	    		    },
+	    		    mouse : { track : true },
+	    		    legend : {
+	    		      position : 'se',
+	    		      backgroundColor : '#D2E8FF'
+	    		    }
+	    		  });
+	}
 });
 
 triviaControllers.controller('DashboardCtrl', function($scope, $http) {
