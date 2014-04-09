@@ -22,7 +22,12 @@ public class Game {
      * to award for a correct answer.
      */
     private DateTime questionAskedAt;
-
+    
+    /**
+     * A list of answers given for the most recent question.
+     */
+    private List<Answer> answers;
+    
     public Game(GameEntity entity) {
         this.entity = entity;
     }
@@ -100,6 +105,13 @@ public class Game {
 
     public Question getCurrentQuestion() {
         return entity.getCurrentQuestion();
+    }
+    
+    public List<Answer> getAnswers() {
+        return answers;
+    }
+    public void setAnswers(List<Answer> answers) {
+        this.answers = answers;
     }
 
 }

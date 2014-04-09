@@ -1,5 +1,6 @@
 package trivia.service;
 
+import trivia.messages.GuessResponseMessage;
 import trivia.model.Game;
 import trivia.model.GameEntity;
 import trivia.model.User;
@@ -43,6 +44,6 @@ public interface TriviaService {
      * @param answer
      *            the users guess to the question.
      */
-    public abstract void guess(User user, Long questionId, String answer);
+    public abstract GuessResponseMessage guess(User user, Long questionId, String answer);
 
 }

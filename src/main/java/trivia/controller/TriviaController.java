@@ -1,23 +1,26 @@
 package trivia.controller;
 
 import java.security.Principal;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import trivia.messages.GuessRequestMessage;
+import trivia.messages.GuessResponseMessage;
 import trivia.model.User;
 import trivia.repository.UserRepository;
 import trivia.service.TriviaService;
 
-/**
- * Controller to handle user interactions for the trivia game.
- */
 @Controller
 public class TriviaController {
 
@@ -71,16 +74,15 @@ public class TriviaController {
      * @return the status
      */
     @Secured("ROLE_USER")
-    @RequestMapping(value = "/guess/{questionId}/{answer}", method = RequestMethod.POST)
-    public @ResponseBody
-    String guess(Principal p, @PathVariable Long questionId, @PathVariable String answer) {
-        logger.debug(p.getName() + " has guessed " + answer + " for question #" + questionId);
+    @RequestMapping(value = "/guess", method=RequestMethod.POST)
+    public @ResponseBody GuessResponseMessage guess(Principal p, @RequestBody GuessRequestMessage msg) {
+        logger.debug(p.getName() + " has guessed " + msg.getGuess() + " for question #" + msg.getQuestionNumber());
 
         User user = userRepository.findByName(p.getName());
 
-        triviaService.guess(user, questionId, answer);
+        GuessResponseMessage response = triviaService.guess(user, msg.getQuestionNumber(), msg.getGuess());
 
-        return "OK";
+        return response;
     }
 
 }

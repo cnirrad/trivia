@@ -57,7 +57,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             if (user.isAdmin()) {
                 grantedAuths.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
             }
-            Authentication auth = new UsernamePasswordAuthenticationToken(user, user.getToken(), grantedAuths);
+            Authentication auth = new UsernamePasswordAuthenticationToken(user.getName(), user.getToken(), grantedAuths);
 
             return auth;
         }
@@ -80,7 +80,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // get this working with AJAX requests.
         http.csrf().disable();
 
-        http.authorizeRequests().antMatchers("/webjars/**", "/js/**", "*.html").permitAll().anyRequest().authenticated();
+        http.authorizeRequests().antMatchers("/webjars/**", "/js/**", "/css/**", "*.html").permitAll().anyRequest().authenticated();
 
         http.authorizeRequests().anyRequest().authenticated().and().formLogin().loginPage("/login").permitAll();
 

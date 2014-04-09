@@ -5,14 +5,14 @@ import trivia.model.GameEntity.State;
 
 public class Message {
 
-    private String state;
+    private String type;
 
     public Message(String type) {
-        this.state = type;
+        this.type = type;
     }
 
-    public String getState() {
-        return state;
+    public String getType() {
+        return type;
     }
 
     /**
@@ -25,6 +25,8 @@ public class Message {
     public static Message fromGame(Game g) {
         if (g.getState() == State.QUESTION) {
             return new TriviaMessage(g.getCurrentQuestion());
+        } else if (g.getState() == State.WAIT) {
+            return new WaitMessage(g.getAnswers());
         } else {
             return new Message(g.getState().toString());
         }

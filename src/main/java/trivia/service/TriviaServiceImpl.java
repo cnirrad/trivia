@@ -1,5 +1,7 @@
 package trivia.service;
 
+import java.util.List;
+
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
@@ -11,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
 import trivia.exception.GameAlreadyStartedException;
+import trivia.messages.GuessResponseMessage;
 import trivia.messages.Message;
 import trivia.model.Answer;
 import trivia.model.Game;
@@ -22,6 +26,7 @@ import trivia.model.User;
 import trivia.repository.AnswerRepository;
 import trivia.repository.GameRepository;
 import trivia.repository.UserRepository;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -89,7 +94,10 @@ public class TriviaServiceImpl implements TriviaService {
     protected void runGame() {
         if (game == null || !game.isStarted()) {
             // Game is not in progress
-            return;
+            
+            // TEMP: start the game for easier testing
+            startGame();
+            //return;
         }
 
         if (game.getNextStateTime() == null) {
@@ -152,6 +160,10 @@ public class TriviaServiceImpl implements TriviaService {
      */
     protected void presentWaitForQuestion() {
         game.setState(State.WAIT);
+        
+        List<Answer> answers = answerRepository.findByQuestion(game.getCurrentQuestion());
+        game.setAnswers(answers);
+        
         broadCastGameState();
         game.setNextStateTime(DateTime.now().plus(Period.seconds(game.getNumSecondsBetweenQuestions())));
         gameRepository.save(game.getEntity());
@@ -194,10 +206,10 @@ public class TriviaServiceImpl implements TriviaService {
      * @see trivia.service.TriviaService#guess(trivia.model.User, java.lang.Long, java.lang.String)
      */
     @Override
-    public void guess(User user, Long questionId, String answer) {
+    public GuessResponseMessage guess(User user, Long questionId, String answer) {
         if (game == null || game.getQuestionAskedAt() == null) {
             logger.warn("Users guessing when no question was asked or no game in progress: " + user);
-            return;
+            return new GuessResponseMessage(answer, 0, 0);
         }
 
         Interval guessInterval = new Interval(game.getQuestionAskedAt(), DateTime.now());
@@ -205,24 +217,28 @@ public class TriviaServiceImpl implements TriviaService {
 
         if (q.getId() != questionId) {
             logger.warn(user.toString() + " is answering the wrong question!");
-            return;
+            return new GuessResponseMessage(answer, 0, 0);
         }
         Duration guessedIn = guessInterval.toDuration();
 
         // Did they guess in the allotted time?
         if (guessedIn.isLongerThan(Seconds.seconds(game.getNumSecondsPerQuestion()).toStandardDuration())) {
             logger.debug("Oops, " + user + " didn't answer within " + game.getNumSecondsPerQuestion() + "seconds.");
-            return;
+            return new GuessResponseMessage(answer, 0, 0);
         }
 
+        GuessResponseMessage response = new GuessResponseMessage(answer, 0, guessedIn.getMillis());
         if (q.getCorrectAnswer().equalsIgnoreCase(answer)) {
             int score = score(guessedIn);
             user.addScore(score);
             userRepository.save(user);
+            response.setPoints(score);
         }
 
         Answer a = new Answer(q, user, guessedIn.getMillis(), answer);
         answerRepository.save(a);
+        
+        return response;
     }
 
     private int score(Duration d) {

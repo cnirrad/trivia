@@ -23,10 +23,36 @@ public class Answer {
     
     private String answer;
     
+    public Answer() {
+        
+    }
+    
     public Answer(Question q, User u, long ms, String answer) {
         this.question = q;
         this.user = u;
         this.milliseconds = ms;
         this.answer = answer;
     }
+
+    public long getId() {
+        return id;
+    }
+
+    public Question getQuestion() {
+        return question;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public long getMilliseconds() {
+        return milliseconds;
+    }
+
+    public String getAnswer() {
+        return answer;
+    }
+    
+    
 }

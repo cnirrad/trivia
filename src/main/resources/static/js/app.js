@@ -24,6 +24,10 @@ angular.module('wsStomp', []).factory('wsStompService', function() {
 		
 		subscribe: function(path, callback) {
 			stompClient.subscribe(path, callback);
+		},
+		
+		send: function(path, msg) {
+			stompClient.send(path, {}, msg);
 		}
 	};
 });
