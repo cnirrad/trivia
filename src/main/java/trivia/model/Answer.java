@@ -1,6 +1,7 @@
 package trivia.model;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -16,7 +17,7 @@ public class Answer {
     @ManyToOne
     private Question question;
     
-    @ManyToOne
+    @ManyToOne(fetch=FetchType.LAZY)
     private User user;
     
     private long milliseconds;
