@@ -228,7 +228,10 @@ triviaControllers.controller('DashboardCtrl', function($scope, $http, wsStompSer
 		if (msg.type == 'QUESTION') {
 			$scope.game.currentQuestionIdx = msg.question.id;
 		} else if (msg.type == 'JOINED') {
-			$scope.users.push(msg.user);
+			var user = $.grep($scope.users, function(u) { return u.name == msg.user.name});
+			if (user == null) {
+				$scope.users.push(msg.user);
+			}
 		}
 		
 		$scope.$apply();
