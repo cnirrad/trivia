@@ -40,91 +40,107 @@
   </head>
 
   <body ng-controller="DashboardCtrl">
-    
-    <div class="container">
-    	<div th:include="segments :: navigation"></div>
-        <div class="col-md-6">
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    Game
-                </div>
-                
-                <table class="table table-hover">
-                    <thead>
-                     <tr>
-                         <th>ID</th>
-                         <th>State</th>
-                         <th>Current Question</th>
-                         <th># of seconds per question</th>
-                     </tr>
-                    </thead>
-                    <tr ng-click="editGame(game)">
-                     <td>{{game.id}}</td>
-                     <td>{{game.state}}</td>
-                     <td>{{game.currentQuestionIdx}}</td>
-                     <td>{{game.numSecondsPerQuestion}}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    
-        <div class="col-md-5">
-	        <div class="panel panel-primary">
-	            <div class="panel-heading">
-	                Users
-	            </div>
-	
-				<div class="pull-right">
-	                    <button class="btn btn-danger" ng-click="resetAllScores()">Reset Scores</button>
-	                    <button class="btn btn-danger" ng-click="deleteAllUsers()">Delete All</button>
-	            </div>
-				<table class="table table-hover">
-				    <thead>
-				     <tr>
-				         <th ng-click="sortUsersBy='name'">Name</th>
-				         <th ng-click="sortUsersBy='-score'">Score</th>
-				         <th ng-click="sortUsersBy='-admin'">Admin?</th></tr>
-				    </thead>
-				    <tr ng-repeat="user in users | orderBy:sortUsersBy" ng-click="editUser(user)">
-				     <td>{{user.name}}</td>
-				     <td>{{user.score}}</td>
-				     <td>{{user.admin}}</td>
-				    </tr>
-				</table>
-				
-			</div>
-		</div>
-		<div class="col-md-11">
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    Questions
-                </div>
-                
-                <table class="table table-hover">
-                    <thead>
-                     <tr>
-                         <th>#</th>
-                         <th>Question</th>
-                         <th>Option A</th>
-                         <th>Option B</th>
-                         <th>Option C</th>
-                         <th>Option D</th>
-                     </tr>
-                    </thead>
-                    <tr ng-repeat="question in game.questions | orderBy:'id'" ng-click="editQuestion(question)">
-                     <td>{{question.id}}</td>
-                     <td>{{question.text}}</td>
-                     <td><span ng-class="{highlight: (question.correctAnswer == 'A')}">{{question.optionA}}</span></td>
-                     <td><span ng-class="{highlight: (question.correctAnswer == 'B')}">{{question.optionB}}</span></td>
-                     <td><span ng-class="{highlight: (question.correctAnswer == 'C')}">{{question.optionC}}</span></td>
-                     <td><span ng-class="{highlight: (question.correctAnswer == 'D')}">{{question.optionD}}</span></td>
-                    </tr>
-                </table>
-                
-            </div>
-        </div>
 
-    </div>
+	<div class="container">
+		<div th:include="segments :: navigation"></div>
+
+		<ul class="nav nav-tabs">
+			<li class="active"><a href="#game" data-toggle="tab">Game</a></li>
+			<li><a href="#users" data-toggle="tab">Users</a></li>
+		</ul>
+
+		<div class="tab-content">
+			<div class="tab-pane active" id="game">
+				<div class="col-md-6">
+					<div class="panel panel-primary">
+						<div class="panel-heading">Game</div>
+
+						<table class="table table-hover">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th>State</th>
+									<th>Current Question</th>
+									<th># of seconds per question</th>
+								</tr>
+							</thead>
+							<tr ng-click="editGame(game)">
+								<td>{{game.id}}</td>
+								<td>{{game.state}}</td>
+								<td>{{game.currentQuestionIdx}}</td>
+								<td>{{game.numSecondsPerQuestion}}</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+				<div class="col-md-11">
+					<div class="panel panel-primary">
+						<div class="panel-heading">Questions</div>
+
+						<table class="table table-hover">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Question</th>
+									<th>Option A</th>
+									<th>Option B</th>
+									<th>Option C</th>
+									<th>Option D</th>
+								</tr>
+							</thead>
+							<tr ng-repeat="question in game.questions | orderBy:'id'"
+								ng-click="editQuestion(question)">
+								<td>{{question.id}}</td>
+								<td>{{question.text}}</td>
+								<td><span
+									ng-class="{highlight: (question.correctAnswer == 'A')}">{{question.optionA}}</span></td>
+								<td><span
+									ng-class="{highlight: (question.correctAnswer == 'B')}">{{question.optionB}}</span></td>
+								<td><span
+									ng-class="{highlight: (question.correctAnswer == 'C')}">{{question.optionC}}</span></td>
+								<td><span
+									ng-class="{highlight: (question.correctAnswer == 'D')}">{{question.optionD}}</span></td>
+							</tr>
+						</table>
+
+					</div>
+				</div>
+			</div>
+			<div class="tab-pane" id="users">
+				<div class="col-md-5">
+					<div class="panel panel-primary">
+						<div class="panel-heading">Users</div>
+
+						<div class="pull-right">
+							<button class="btn btn-danger" ng-click="resetAllScores()">Reset
+								Scores</button>
+							<button class="btn btn-danger" ng-click="deleteAllUsers()">Delete
+								All</button>
+						</div>
+						<table class="table table-hover">
+							<thead>
+								<tr>
+									<th ng-click="sortUsersBy='name'">Name</th>
+									<th ng-click="sortUsersBy='-score'">Score</th>
+									<th ng-click="sortUsersBy='-admin'">Admin?</th>
+								</tr>
+							</thead>
+							<tr ng-repeat="user in users | orderBy:sortUsersBy"
+								ng-click="editUser(user)">
+								<td>{{user.name}}</td>
+								<td>{{user.score}}</td>
+								<td>{{user.admin}}</td>
+							</tr>
+						</table>
+
+					</div>
+				</div>
+			</div>
+			<div class="tab-pane" id="messages">...</div>
+			<div class="tab-pane" id="settings">...</div>
+		</div>
+
+	</div>
 
 	<!-- Modals -->
 	<div class="modal fade" id="editUser" tabindex="-1" role="dialog" aria-labelledby="editUserTitle" aria-hidden="true">
