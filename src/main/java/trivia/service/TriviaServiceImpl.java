@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import trivia.exception.GameAlreadyStartedException;
 import trivia.messages.GuessResponseMessage;
@@ -55,6 +55,9 @@ public class TriviaServiceImpl implements TriviaService {
     @Autowired
     private SeedDataService seedData;
 
+    @Autowired
+    private TaskScheduler taskScheduler;
+
     /**
      * The game state. This will be written to the database at key points in the games lifecycle.
      */
@@ -81,29 +84,8 @@ public class TriviaServiceImpl implements TriviaService {
         }
 
         game.setState(State.STARTING);
-        gameRepository.save(game.getEntity());
+        goToNextState();
         return game;
-    }
-
-    /**
-     * Manages the game. This will be invoked at a fixed rate to handle state transitions.
-     */
-    @Scheduled(fixedRate = 1000)
-    protected void runGame() {
-        if (game == null || !game.isStarted() || game.getState() == State.WAIT) {
-            // Game is not in progress or in wait state.
-            return;
-        }
-
-        if (game.getNextStateTime() == null) {
-            // Better present a question, eh?
-            presentNextQuestion();
-        } else {
-
-            if (DateTime.now().isAfter(game.getNextStateTime())) {
-                goToNextState();
-            }
-        }
     }
 
     /**
@@ -134,18 +116,27 @@ public class TriviaServiceImpl implements TriviaService {
         Question q = game.nextQuestion();
         if (q == null) {
             // End of the game!
-            // game.setState(State.FINISH);
-            game.setCurrentQuestionIdx(0);
-            game.setState(State.QUESTION);
+            game.setState(State.FINISH);
             broadCastGameState();
-            game.setNextStateTime(DateTime.now().plus(Period.seconds(game.getNumSecondsPerQuestion())));
         } else {
             // Broadcast the question
             game.setState(State.QUESTION);
             broadCastGameState();
-            game.setNextStateTime(DateTime.now().plus(Period.seconds(game.getNumSecondsPerQuestion())));
         }
         game.setQuestionAskedAt(DateTime.now());
+
+        DateTime questionEnd = DateTime.now().plus(Period.seconds(game.getNumSecondsPerQuestion()));
+        logger.debug("Time is up at: " + questionEnd.toString());
+
+        taskScheduler.schedule(new Runnable() {
+
+            @Override
+            public void run() {
+                logger.debug("Time is up!");
+                goToNextState();
+            }
+
+        }, questionEnd.toDate());
 
         gameRepository.save(game.getEntity());
     }

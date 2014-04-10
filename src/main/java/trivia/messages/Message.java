@@ -26,7 +26,7 @@ public class Message {
         if (g.getState() == State.QUESTION) {
             return new TriviaMessage(g.getCurrentQuestion());
         } else if (g.getState() == State.WAIT) {
-            return new WaitMessage(g.getAnswers());
+            return new WaitMessage(g.getCurrentQuestion(), g.getAnswers());
         } else {
             return new Message(g.getState().toString());
         }
