@@ -25,7 +25,6 @@ import trivia.model.User;
 import trivia.repository.AnswerRepository;
 import trivia.repository.GameRepository;
 import trivia.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A service that keeps track of the current game.
@@ -55,8 +54,6 @@ public class TriviaServiceImpl implements TriviaService {
 
     @Autowired
     private SeedDataService seedData;
-
-    private ObjectMapper mapper = new ObjectMapper();
 
     /**
      * The game state. This will be written to the database at key points in the games lifecycle.
@@ -93,8 +90,8 @@ public class TriviaServiceImpl implements TriviaService {
      */
     @Scheduled(fixedRate = 1000)
     protected void runGame() {
-        if (game == null || !game.isStarted()) {
-            // Game is not in progress
+        if (game == null || !game.isStarted() || game.getState() == State.WAIT) {
+            // Game is not in progress or in wait state.
             return;
         }
 
