@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import trivia.messages.GuessRequestMessage;
 import trivia.messages.GuessResponseMessage;
+import trivia.messages.JoinMessage;
 import trivia.model.User;
 import trivia.repository.UserRepository;
 import trivia.service.TriviaService;
@@ -56,7 +57,7 @@ public class TriviaController {
 
         User u = userRepository.findByName(p.getName());
 
-        messaging.convertAndSend("/topic/joined", p.getName());
+        messaging.convertAndSend("/topic/joined", new JoinMessage(u));
 
         ModelAndView mav = new ModelAndView("index");
         mav.addObject("user", u);

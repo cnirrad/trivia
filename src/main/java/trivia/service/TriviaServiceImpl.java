@@ -176,7 +176,7 @@ public class TriviaServiceImpl implements TriviaService {
 
             logger.debug("Broadcasting to /topic/trivia: " + m);
 
-            messaging.convertAndSend("/topic/trivia", mapper.writeValueAsString(m));
+            messaging.convertAndSend("/topic/trivia", m);
         } catch (Exception e) {
             logger.warn("Exception on sending a TriviaMessage", e);
         }

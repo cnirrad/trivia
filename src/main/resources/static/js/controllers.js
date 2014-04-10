@@ -5,7 +5,7 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
 	$scope.game = {state: 'NOT_STARTED'};
 		
 	$scope.onMessage = function(msg) {
-    	$scope.msg = JSON.parse(JSON.parse(msg.body));
+    	$scope.msg = JSON.parse(msg.body);
     	
     	if ($scope.msg.type == 'WAIT') {
     		//$(".app").pagecontainer("change", "#wait", { transition: 'slide' });
@@ -233,12 +233,15 @@ triviaControllers.controller('DashboardCtrl', function($scope, $http, wsStompSer
 	}
 	
 	$scope.onMessage = function(rawMsg) {
-		var msg = JSON.parse(JSON.parse(rawMsg.body));
+		var msg = JSON.parse(rawMsg.body);
 		$scope.game.state = msg.type;
 		
 		if (msg.type == 'QUESTION') {
 			$scope.game.currentQuestionIdx = msg.question.id;
+		} else if (msg.type == 'JOINED') {
+			$scope.users.push(msg.user);
 		}
+		
 		$scope.$apply();
 	}
 	
@@ -247,6 +250,7 @@ triviaControllers.controller('DashboardCtrl', function($scope, $http, wsStompSer
 		//$scope.game.state = 'CONNECTED';
 		//$scope.$apply();
         wsStompService.subscribe('/topic/trivia', $scope.onMessage);
+        wsStompService.subscribe('/topic/joined', $scope.onMessage);
 	}
 	
 	$scope.onClose = function(error) {
