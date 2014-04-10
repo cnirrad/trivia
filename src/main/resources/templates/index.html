@@ -5,8 +5,17 @@
 	    <meta name="viewport" content="width=device-width, initial-scale=1" />
 	    <meta name="description" content="a trivia game" />
 	    <meta name="author" content="Darrin Collins" />
-	
-	    <title>Trivia</title>
+
+		<script src="/webjars/jquery/2.1.0/jquery.js"></script>
+		<script src="/webjars/angularjs/1.3.0-beta.4/angular.js"></script>
+		
+		<script src="/js/sockjs-0.3.4.js"></script>
+		<script src="/js/stomp.js"></script>
+		<script src="js/controllers.js"></script>
+		<script src="js/app.js"></script>
+		<script src="js/flotr2.min.js"></script>
+		
+		<title>Trivia</title>
 	
 	    <!-- Bootstrap core CSS -->
 	    <link href="webjars/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"></link>
@@ -56,7 +65,7 @@
     <div class="container" ng-show="game.state == 'NOT_STARTED'">
 
        <h2>Welcome, <span th:text="${user.getName()}">friend</span>!</h2>
-	   <h4>The game will start shortly. Be ready!</h4>
+	   <h4>The game will start shortly. Good luck!</h4>
     </div>
 
     <div class="container" ng-show="game.state == 'QUESTION'">
@@ -88,7 +97,7 @@
 			guessed incorrectly. The correct answer was {{game.correctAnswer}}.</div>
 		<div ng-show="msg.guesses">
 
-	    <div id="chart" style="width: 400px; height: 400px;"></div>
+	    <div id="chart" style="min-width: 100px; max-width: 500px; min-height: 350px;"></div>
 
 		</div>
 	</div>
@@ -100,16 +109,7 @@
     	<div class="alert alert-danger">{{game.error}}</div>
     </div>
 	
-    <!-- ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-	<script src="/webjars/jquery/2.1.0/jquery.js"></script>
-	<script src="/webjars/angularjs/1.3.0-beta.4/angular.js"></script>
 
-	<script src="/js/sockjs-0.3.4.js"></script>
-	<script src="/js/stomp.js"></script>
-	<script src="js/controllers.js"></script>
-	<script src="js/app.js"></script>
-	<script src="js/flotr2.min.js"></script>
 
 	<script src="webjars/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 

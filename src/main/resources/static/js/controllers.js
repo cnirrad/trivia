@@ -103,7 +103,10 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
 		var correctAnswerIdx = $scope.msg.question.correctAnswer.charCodeAt(0) - 'A'.charCodeAt(0);
 		data[correctAnswerIdx].pie = { explode: 20 };
 		
+		$('#chart').width($('#chart').parent().width());
+		
 		var graph = Flotr.draw($('#chart').get(0), data,{
+			        title: 'How players responded',
 	    			HtmlText : false,
 	    		    grid : {
 	    		      verticalLines : false,
@@ -124,19 +127,117 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
 	}
 });
 
-triviaControllers.controller('DashboardCtrl', function($scope, $http) {
+triviaControllers.controller('DashboardCtrl', function($scope, $http, wsStompService) {
+	$scope.users = [];
+	$scope.game = null;
+	
+	$scope.sortUsersBy = 'name';
+	
 	$http.get('/admin/game').success(function(data) {
 		$scope.game = data;
 		$scope.gameStarted = data.state != 'NOT_STARTED' && data.state != 'FINISHED';
 	});
 	
-	$scope.users = [];
+	
+	$http.get('/admin/users').success(function(data) {
+		$scope.users = data;
+	});
 	
 	$scope.post = function(url) {
 		$http.post(url);
 	}
-});
-
-triviaControllers.controller('WaitCtrl', function($scope, $http) {
 	
+	$scope.editUser = function(user) {
+		$scope.error = null;
+		$scope.currentUser = user;
+		$('#editUser').modal();
+	}
+	
+	$scope.submitUserEdit = function() {
+		$http.post('/admin/user', $scope.currentUser)
+			.success(function(data) {
+				console.log("OK: ", data);
+			});
+	}
+	
+	$scope.deleteUser = function(user) {
+		$http.post('/admin/users/delete/' + user.id)
+			.success(function(data) {
+				
+				for (var i = 0; i < $scope.users.length; i++) {
+					if ($scope.users[i].name == user.name) {
+						$scope.users.splice(i, 1);
+					}
+				}
+				
+				$('#editUser').modal('hide');
+			})
+			.error(function(data, status) {
+				console.log('Delete User failed', data, status);
+				$scope.error = "Unable to delete user."
+			});
+	}
+	
+	$scope.resetAllScores = function() {
+		$http.post('/admin/users/scores/reset').success(function(data) {
+			for (var i = 0; i < $scope.users.length; i++) {
+				$scope.users[i].score = 0;
+			}
+		});
+	}
+	
+	$scope.deleteAllUsers = function() {
+		$http.post('/admin/users/delete/all').success(function(data) {
+			var admin = $.grep($scope.users, function(u) { return u.name == 'admin'});
+			$scope.users = [admin];
+		});
+	}
+	
+	
+	$scope.editQuestion = function(q) {
+		$scope.error = null;
+		$scope.currentQuestion = q;
+		$('#editQuestion').modal();
+	}
+	
+	$scope.submitQuestionEdit = function() {
+		$http.post('/admin/question', $scope.currentQuestion)
+			.success(function(data) {
+				console.log("OK: ", data);
+			});
+	}
+	
+	$scope.editGame = function(g) {
+		$scope.error = null;
+		$scope.currentGame = g;
+		console.log($scope.currentGame);
+		$('#editGame').modal();
+	}
+	
+	
+	$scope.onMessage = function(rawMsg) {
+		var msg = JSON.parse(JSON.parse(rawMsg.body));
+		$scope.game.state = msg.type;
+		
+		if (msg.type == 'QUESTION') {
+			$scope.game.currentQuestionIdx = msg.question.id;
+		}
+		$scope.$apply();
+	}
+	
+	$scope.onConnection = function(frame) {
+        //setConnected(true);
+		//$scope.game.state = 'CONNECTED';
+		//$scope.$apply();
+        wsStompService.subscribe('/topic/trivia', $scope.onMessage);
+	}
+	
+	$scope.onClose = function(error) {
+		// TODO: Tell the user!
+		$scope.game.state = 'ERROR';
+		$scope.game.error = 'You have been disconnected!';
+	}
+	
+	// Start the STOMP service
+	wsStompService.connect('/trivia', {}, $scope.onConnection, $scope.onClose);
 });

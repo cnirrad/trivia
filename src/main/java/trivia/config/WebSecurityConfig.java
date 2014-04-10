@@ -80,8 +80,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // get this working with AJAX requests.
         http.csrf().disable();
 
-        http.authorizeRequests().antMatchers("/webjars/**", "/js/**", "/css/**", "*.html").permitAll().anyRequest().authenticated();
-
+        http.authorizeRequests().antMatchers("/webjars/**", "/js/**", "/css/**").permitAll();
         http.authorizeRequests().anyRequest().authenticated().and().formLogin().loginPage("/login").permitAll();
 
     }
