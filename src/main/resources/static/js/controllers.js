@@ -3,6 +3,7 @@ var triviaControllers = angular.module('triviaControllers', ['wsStomp']);
 triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document, wsStompService) {
 	
 	$scope.game = {state: 'NOT_STARTED'};
+	$scope.url = window.location.origin;
 		
 	$scope.onMessage = function(msg) {
     	$scope.msg = JSON.parse(msg.body);

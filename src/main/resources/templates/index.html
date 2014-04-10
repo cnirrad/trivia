@@ -53,6 +53,27 @@
 	    	</div>
 	    	<div th:case="true">
 	    	    <h2>Welcome, trivia afficionados!</h2>
+	    	    <h4>Instructions for how to join the game:</h4>
+	    	    <ol>
+	    	    	<li>Connect your smartphone or tablet to the "trivia" wifi network.</li>
+	    	    	<li>Point your browser to: {{url}} or use the following QR code. <div id="qrcode"></div></li>
+	    	    	<li>Enter your name.</li>
+	    	    	<li>Wait for the game to start!</li>
+	    	    </ol>
+	    	    
+	    	    
+	    	    <!-- Putting it here so users don't need to download this script. -->
+	    	    <script src="/js/qrcode.min.js"></script>
+	    	    <script type="text/javascript">
+	    	    	new QRCode(document.getElementById("qrcode"), {
+	    	    	    text: "{{url}}",
+	    	    	    width: 128,
+	    	    	    height: 128,
+	    	    	    colorDark : "#000000",
+	    	    	    colorLight : "#ffffff",
+	    	    	    correctLevel : QRCode.CorrectLevel.H
+	    	    	});
+	    	    </script>
 	   		    <button type="button" class="btn btn-warning" th:if="${not game.isStarted()}" ng-click="startGame()">Start</button>
 	    	</div>
 	    </div>
@@ -79,23 +100,31 @@
 
     <div class="container" ng-show="game.state == 'WAIT'">
 
-		<div ng-show="game.lastGuess == null">
-			<div ng-show="question != null">Sorry! Your time is up. The
-				correct answer was {{game.correctAnswer}}.</div>
-			<div>Waiting for the next question....</div>
-		</div>
-		<div ng-show="game.lastGuess.correct">Good Job! You guessed the
-			correct answer in {{game.lastGuess.responseTime}} ms.</div>
-		<div ng-show="game.lastGuess.correct == false">Oh, too bad. You
-			guessed incorrectly. The correct answer was {{game.correctAnswer}}.</div>
-		<div ng-show="msg.guesses">
+		<div th:switch="${user.isAdmin()}">
+	    	<div th:case="false">
+				<div ng-show="game.lastGuess == null">
+					<h2 ng-show="question != null">Sorry! Your time is up. The
+						correct answer was {{game.correctAnswer}}.</h2>
+					<h4>Waiting for the next question....</h4>
+				</div>
+				<h2 ng-show="game.lastGuess.correct">Good Job! You guessed the
+					correct answer in {{game.lastGuess.responseTime}} ms.</h2>
+				<h2 ng-show="game.lastGuess.correct == false">Oh, too bad. You
+					guessed incorrectly. The correct answer was {{game.correctAnswer}}.</h2>
 
-	    <div id="chart" style="min-width: 100px; max-width: 500px; min-height: 350px;"></div>
+			</div>
+			<div th:case="true">
+				<h1>Time is up!</h1>
+			</div>
 
+			<div ng-show="msg.guesses">
+				<div id="chart" style="min-width: 100px; max-width: 500px; min-height: 350px;"></div>
+			</div>
 		</div>
 	</div>
 	
 	<div class="container" ng-show="game.state == 'FINISHED'">
+		<!-- TODO: Present leaderboard -->
 	</div>
 	
 	<div class="container" ng-show="game.state == 'ERROR'">
