@@ -54,4 +54,9 @@ public interface TriviaService {
      */
     public abstract void updateGame(GameEntity game);
 
+    /**
+     * Contine to the next state.
+     */
+    public abstract void goToNextState();
+
 }

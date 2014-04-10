@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
+import trivia.model.Game;
 import trivia.model.GameEntity;
+import trivia.model.GameEntity.State;
 import trivia.model.Question;
 import trivia.model.User;
 import trivia.repository.AnswerRepository;
@@ -127,4 +129,17 @@ public class AdminController {
         return triviaService.reset();
     }
 
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/game/continue", method = RequestMethod.POST)
+    public @ResponseBody
+    GameEntity continueGame() {
+        Game g = triviaService.getGame();
+
+        // only allow continue when it is in WAIT state
+        if (g.getState() == State.WAIT) {
+            triviaService.goToNextState();
+        }
+
+        return g.getEntity();
+    }
 }

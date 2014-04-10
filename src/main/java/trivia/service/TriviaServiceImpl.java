@@ -109,7 +109,7 @@ public class TriviaServiceImpl implements TriviaService {
     /**
      * Based on the current state, transition to the next.
      */
-    protected void goToNextState() {
+    public void goToNextState() {
         switch (game.getState()) {
         case NOT_STARTED:
             break;

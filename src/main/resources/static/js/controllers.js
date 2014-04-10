@@ -61,6 +61,14 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
 		});
 	}
 	
+	$scope.continueToNextState = function() {
+		$http.post('/admin/game/continue')
+			.error(function(data, status) {
+				console.log('Continue failed!', data, status);
+				$scope.error = "Unable to update game."
+			});
+	}
+	
 	$scope.guessToQuestionText = function(guess) {
 		var answerText = "";
 		if (guess == "A") {
@@ -124,7 +132,7 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
 
 triviaControllers.controller('DashboardCtrl', function($scope, $http, wsStompService) {
 	$scope.users = [];
-	$scope.game = null;
+	$scope.game = {state: 'UNKNOWN'};
 	
 	$scope.sortUsersBy = 'name';
 	
@@ -219,6 +227,14 @@ triviaControllers.controller('DashboardCtrl', function($scope, $http, wsStompSer
 			console.log('Update Game failed', data, status);
 			$scope.error = "Unable to update game."
 		});
+	}
+	
+	$scope.continueToNextState = function() {
+		$http.post('/admin/game/continue')
+			.error(function(data, status) {
+				console.log('Continue failed!', data, status);
+				$scope.error = "Unable to update game."
+			});
 	}
 	
 	$scope.onMessage = function(rawMsg) {
