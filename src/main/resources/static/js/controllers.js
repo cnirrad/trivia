@@ -214,6 +214,17 @@ triviaControllers.controller('DashboardCtrl', function($scope, $http, wsStompSer
 		$('#editGame').modal();
 	}
 	
+	$scope.submitGameEdit = function() {
+		$http({
+		    method: 'POST',
+		    url: '/admin/game',
+		    data: $.param({'numSecondsPerQuestion': $scope.currentGame.numSecondsPerQuestion}),
+		    headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+		}).error(function(data, status) {
+			console.log('Update Game failed', data, status);
+			$scope.error = "Unable to update game."
+		});
+	}
 	
 	$scope.onMessage = function(rawMsg) {
 		var msg = JSON.parse(JSON.parse(rawMsg.body));

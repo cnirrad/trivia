@@ -222,11 +222,11 @@
             <form role="form">
                 <div class="form-group">
                     <label for="text">State: {{currentGame.state}}</label> 
-                    <button type="button" class="pull-right btn btn-primary" id="resetBtn" ng-model="post('/admin/reset')">Reset</button>
+                    <button type="button" class="pull-right btn btn-primary" id="resetBtn" ng-click="post('/admin/reset')">Reset</button>
                 </div>
                 <div class="form-group">
                     <label for="currentQuestion">Current Question #</label> 
-                    <input class="form-control" id="currentQuestionIdx" ng-model="currentGame.currentQuestionIdx"/>
+                    <input class="form-control" id="currentQuestionIdx" ng-model="currentGame.currentQuestionIdx" disabled="true"/>
                 </div>
                 <div class="form-group">
                     <label for="numSecPerQuestion">Num Seconds Per Question</label> 

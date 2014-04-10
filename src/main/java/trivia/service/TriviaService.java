@@ -46,4 +46,12 @@ public interface TriviaService {
      */
     public abstract GuessResponseMessage guess(User user, Long questionId, String answer);
 
+    /**
+     * Updates the game on the database and in memory.
+     * 
+     * @param game
+     *            the new game object
+     */
+    public abstract void updateGame(GameEntity game);
+
 }

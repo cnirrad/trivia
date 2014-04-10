@@ -60,6 +60,7 @@ public class TriviaController {
 
         ModelAndView mav = new ModelAndView("index");
         mav.addObject("user", u);
+        mav.addObject("game", triviaService.getGame());
 
         return mav;
     }

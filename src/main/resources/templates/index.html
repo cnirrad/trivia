@@ -66,6 +66,10 @@
 
        <h2>Welcome, <span th:text="${user.getName()}">friend</span>!</h2>
 	   <h4>The game will start shortly. Good luck!</h4>
+	   
+	   <div th:if="${user.isAdmin() and !game.isStarted()}">
+	   		<button type="button" class="btn btn-warning" ng-click="startGame()">Start</button>
+	   </div>
     </div>
 
     <div class="container" ng-show="game.state == 'QUESTION'">

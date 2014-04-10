@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * for example when the time limit for a question has been reached.
  * 
  * This keeps the Game state in memory, periodically saving it to the database. This is not very
- * scalable, but was done this way for simplicity.
+ * scalable (or even thread-safe), but was done this way for simplicity.
  */
 @Service
 public class TriviaServiceImpl implements TriviaService {
@@ -95,10 +95,7 @@ public class TriviaServiceImpl implements TriviaService {
     protected void runGame() {
         if (game == null || !game.isStarted()) {
             // Game is not in progress
-
-            // TEMP: start the game for easier testing
-            startGame();
-            // return;
+            return;
         }
 
         if (game.getNextStateTime() == null) {
@@ -285,6 +282,12 @@ public class TriviaServiceImpl implements TriviaService {
 
     public void setMessagingTemplate(SimpMessagingTemplate messagingTemplate) {
         this.messaging = messagingTemplate;
+    }
+
+    @Override
+    public void updateGame(GameEntity game) {
+        gameRepository.save(game);
+        this.game.setEntity(game);
     }
 
 }
