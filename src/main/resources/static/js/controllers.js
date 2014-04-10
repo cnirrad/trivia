@@ -8,20 +8,13 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
     	$scope.msg = JSON.parse(msg.body);
     	
     	if ($scope.msg.type == 'WAIT') {
-    		//$(".app").pagecontainer("change", "#wait", { transition: 'slide' });
-    		
     		var data = [{option: $scope.msg.question.optionA, num: $scope.msg.guesses[0]},
     	    		                 {option: $scope.msg.question.optionB, num: $scope.msg.guesses[1]},
     					    		 {option: $scope.msg.question.optionC, num: $scope.msg.guesses[2]},
     					             {option: $scope.msg.question.optionD, num: $scope.msg.guesses[3]}];
     		
-//    		var data = [[ $scope.msg.question.optionA, $scope.msg.guesses[0] ],
-//		                 [$scope.msg.question.optionB,  $scope.msg.guesses[1]],
-//			    		 [$scope.msg.question.optionC,  $scope.msg.guesses[2]],
-//			             [$scope.msg.question.optionD,  $scope.msg.guesses[3]]];
     		$scope.game.state = 'WAIT';
     		
-//    		$.mobile.changePage('#wait');
     	} else if ($scope.msg.type == 'QUESTION') {
     		// clear the last guess
     		$scope.game.lastGuess = null;
@@ -48,7 +41,6 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
 		$scope.game.lastGuess = {'guess': guess};
 		
 		//wsStompService.send('/app/guess', msg);
-		
 		// TODO: using http instead of WS because I can't get a request-reply pattern to work
 		$http.post('/guess', msg).success(function(response) {
 			console.log(response);
@@ -83,14 +75,10 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
 	}
 	
 	$scope.onConnection = function(frame) {
-        //setConnected(true);
-		//$scope.game.state = 'CONNECTED';
-		//$scope.$apply();
         wsStompService.subscribe('/topic/trivia', $scope.onMessage);
 	}
 	
 	$scope.onClose = function(error) {
-		// TODO: Tell the user!
 		$scope.game.state = 'ERROR';
 		$scope.game.error = 'You have been disconnected!';
 	}
@@ -246,15 +234,11 @@ triviaControllers.controller('DashboardCtrl', function($scope, $http, wsStompSer
 	}
 	
 	$scope.onConnection = function(frame) {
-        //setConnected(true);
-		//$scope.game.state = 'CONNECTED';
-		//$scope.$apply();
         wsStompService.subscribe('/topic/trivia', $scope.onMessage);
         wsStompService.subscribe('/topic/joined', $scope.onMessage);
 	}
 	
 	$scope.onClose = function(error) {
-		// TODO: Tell the user!
 		$scope.game.state = 'ERROR';
 		$scope.game.error = 'You have been disconnected!';
 	}
