@@ -62,6 +62,12 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
 		
 	}
 	
+	$scope.startGame = function() {
+		$http.post('/admin/start').success(function(response) {
+			console.log(response);
+		});
+	}
+	
 	$scope.guessToQuestionText = function(guess) {
 		var answerText = "";
 		if (guess == "A") {

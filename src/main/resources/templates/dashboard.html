@@ -30,7 +30,7 @@
         <![endif]-->
       <style type="text/css">
         body {
-            padding-top: 50px;
+            padding-top: 55px;
         }
         
         .highlight {
@@ -42,7 +42,7 @@
   <body ng-controller="DashboardCtrl">
     
     <div class="container">
-    
+    	<div th:include="segments :: navigation"></div>
         <div class="col-md-6">
             <div class="panel panel-primary">
                 <div class="panel-heading">

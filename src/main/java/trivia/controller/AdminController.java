@@ -44,11 +44,10 @@ public class AdminController {
     public ModelAndView dashboard(Principal p) {
         ModelAndView mav = new ModelAndView("dashboard");
 
-        // GameEntity game = gameRepository.findOne(1L);
-        // Iterable<User> users = userRepository.findAll();
-        //
-        // mav.addObject("game", game);
-        // mav.addObject("users", users);
+        User u = userRepository.findByName(p.getName());
+
+        mav.addObject("user", u);
+        mav.addObject("game", triviaService.getGame());
 
         return mav;
     }
