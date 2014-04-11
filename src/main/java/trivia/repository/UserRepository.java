@@ -1,5 +1,7 @@
 package trivia.repository;
 
+import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,6 +17,9 @@ public interface UserRepository extends CrudRepository<User, Long> {
     User findByName(String name);
 
     User findByNameAndToken(String name, String token);
+    
+    @Query("SELECT u FROM User u WHERE u.name != 'admin'")
+    public List<User> findAllExceptAdmin();
     
     @Modifying
     @Transactional

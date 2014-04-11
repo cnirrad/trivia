@@ -16,7 +16,7 @@ public class GuessResponseMessage extends Message {
         super("GUESS");
         this.guess = guess;
         this.points = points;
-        this.responseTime = responseTime;
+        this.responseTime = responseTime / 1000;
     }
     
     public int getPoints() {

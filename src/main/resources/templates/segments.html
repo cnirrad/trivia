@@ -24,7 +24,7 @@
 					</ul>
 					<form th:if="${user.isAdmin()}" class="navbar-form navbar-right"
 						role="search">
-						<button type="button" ng-show="game.state == 'WAIT'" ng-click="continueToNextState()"
+						<button type="button" ng-click="continueToNextState()"
 							class="btn btn-success">Continue</button>
 					</form>
 				</div>

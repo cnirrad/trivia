@@ -49,7 +49,9 @@
 	    <div th:switch="${user.isAdmin()}">
 	    	<div th:case="false">
 	    	    <h2>Welcome, <span th:text="${user.getName()}">friend</span>!</h2>
-	            <h4>The game will start shortly. Good luck!</h4>
+	            <h4>The game will start shortly. When the question is given, 4 options will be presented
+	                to you. Choose the correct answer as fast as you can - more points will be awarded 
+	                based on how quick you answered. Good luck!</h4>
 	    	</div>
 	    	<div th:case="true">
 	    	    <h2>Welcome, trivia afficionados!</h2>
@@ -98,34 +100,75 @@
     	<h4>You have guessed {{guessToQuestionText(game.lastGuess.guess)}}. Let's see if you were right...</h4>
     </div>
 
-    <div class="container" ng-show="game.state == 'WAIT'">
-
-		<div th:switch="${user.isAdmin()}">
-	    	<div th:case="false">
-				<div ng-show="game.lastGuess == null">
-					<h2 ng-show="question != null">Sorry! Your time is up. The
-						correct answer was {{game.correctAnswer}}.</h2>
-					<h4>Waiting for the next question....</h4>
-				</div>
-				<h2 ng-show="game.lastGuess.correct">Good Job! You guessed the
-					correct answer in {{game.lastGuess.responseTime}} ms.</h2>
-				<h2 ng-show="game.lastGuess.correct == false">Oh, too bad. You
-					guessed incorrectly. The correct answer was {{game.correctAnswer}}.</h2>
-
-			</div>
-			<div th:case="true">
-				<h1>Time is up!</h1>
+    <div class="container" ng-show="game.state == 'TIME_UP'">
+	    <h1>Time is up!</h1>
 				
-			</div>
-
-			<div ng-show="msg.guesses">
-				<div id="chart" style="min-width: 100px; max-width: 500px; min-height: 350px;"></div>
-			</div>
+		<div ng-show="msg.guesses">
+			<div id="chart" style="min-width: 100px; max-width: 500px; min-height: 350px;"></div>
 		</div>
 	</div>
+	<div class="container" ng-show="game.state == 'REVEAL'">
+
+        <div th:switch="${user.isAdmin()}">
+            <div th:case="false">
+                <div ng-show="game.lastGuess == null">
+                    <h2 ng-show="question != null">Sorry! You weren't fast enough. The
+                        correct answer was {{game.correctAnswer}}.</h2>
+                    <h4>Waiting for the next question....</h4>
+                </div>
+                <h2 ng-show="game.lastGuess.correct">Good Job! You guessed the
+                    correct answer in {{game.lastGuess.responseTime}} s and
+                    have been awarded {{game.lastGuess.points}} points!</h2>
+                <h2 ng-show="game.lastGuess.correct == false">Oh, too bad. You
+                    guessed incorrectly. The correct answer was {{game.correctAnswer}}.</h2>
+
+            </div>
+            <div th:case="true">
+                <h1>The correct answer is <b>{{game.correctAnswer}}</b>.</h1>
+
+            </div>
+            
+            <h2>Here is the leaderboard:</h2>
+            <div class="col-md-3">
+                <table class="table col-md-3">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Score</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="user in msg.users | orderBy:'-overallScore'">
+                        <td>{{user.name}}</td>
+                        <td>{{user.overallScore}}</td>
+                        <td><span ng-show="user.questionScore" 
+                                  class="label label-success">+{{user.questionScore}}</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
 	
-	<div class="container" ng-show="game.state == 'FINISHED'">
-		<!-- TODO: Present leaderboard -->
+	<div class="container" ng-show="game.state == 'FINISH'">
+		<h1>And the winner is....</h1>
+		
+		<div class="col-md-3">
+             <table class="table col-md-3">
+                 <thead>
+                     <tr>
+                         <th>Name</th>
+                         <th>Score</th>
+                         <th></th>
+                     </tr>
+                 </thead>
+                 <tr ng-repeat="user in msg.users | orderBy:'-score'"
+                     ng-class="{'success': $first}">
+                     <td>{{user.name}}</td>
+                     <td>{{user.score}}</td>
+                 </tr>
+             </table>
+         </div>
 	</div>
 	
 	<div class="container" ng-show="game.state == 'ERROR'">

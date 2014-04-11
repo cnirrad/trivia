@@ -16,7 +16,9 @@ import javax.persistence.OneToMany;
 public class GameEntity {
 
     public enum State {
-        NOT_STARTED, STARTING, QUESTION, WAIT, FINISH
+        NOT_STARTED, STARTING, QUESTION, TIME_UP, REVEAL, FINISH;
+        
+        public boolean isWait() { return this == TIME_UP || this == REVEAL; }
     }
 
     @Id

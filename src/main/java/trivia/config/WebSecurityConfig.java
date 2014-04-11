@@ -41,6 +41,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 user = new User();
                 user.setName(authentication.getName());
                 user.setToken(authentication.getCredentials().toString());
+                
                 user = userRepository.save(user);
             } else {
                 // validate token

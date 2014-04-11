@@ -135,10 +135,7 @@ public class AdminController {
     GameEntity continueGame() {
         Game g = triviaService.getGame();
 
-        // only allow continue when it is in WAIT state
-        if (g.getState() == State.WAIT) {
-            triviaService.goToNextState();
-        }
+        triviaService.goToNextState();
 
         return g.getEntity();
     }

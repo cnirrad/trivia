@@ -8,31 +8,30 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
 	$scope.onMessage = function(msg) {
     	$scope.msg = JSON.parse(msg.body);
     	
-    	if ($scope.msg.type == 'WAIT') {
-    		var data = [{option: $scope.msg.question.optionA, num: $scope.msg.guesses[0]},
-    	    		                 {option: $scope.msg.question.optionB, num: $scope.msg.guesses[1]},
-    					    		 {option: $scope.msg.question.optionC, num: $scope.msg.guesses[2]},
-    					             {option: $scope.msg.question.optionD, num: $scope.msg.guesses[3]}];
-    		
-    		$scope.game.state = 'WAIT';
-    		
+    	if ($scope.msg.type == 'TIME_UP') {
+    		$scope.game.state = 'TIME_UP';
+    		$scope.game.lastAnswers = msg.answers;
     	} else if ($scope.msg.type == 'QUESTION') {
-    		// clear the last guess
+    		// clear the last guess and answers
     		$scope.game.lastGuess = null;
+    		$scope.game.lastAnswers = null;
     		
     		$scope.question = $scope.msg.question;
     		$scope.game.correctAnswer = $scope.guessToQuestionText($scope.msg.question.correctAnswer);
     		
     		$scope.game.state = 'QUESTION';
-    	} else if ($scope.msg.type == 'GUESS') {
-    		// Don't show them yet, just save this off for when we get the WAIT message.
-    		$scope.game.lastGuess = msg;
-    		$scope.game.state = 'GUESSED';
+    	} else if ($scope.msg.type == 'REVEAL') {
+    		
+    		$scope.game.state = 'REVEAL';
+    	} else if ($scope.msg.type == 'FINISH') {
+    		$scope.game.state = 'FINISH';
     	}
     	
     	$scope.$apply();
     	
-    	if ($scope.game.state == 'WAIT') {
+    	// The graph needs to be drawn after the $apply, otherwise flotr2 will
+    	// complain that the graph is not visible.
+    	if ($scope.game.state == 'TIME_UP') {
     		$scope.drawGraph();
     	}
 	}
@@ -90,6 +89,7 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
 	$scope.onClose = function(error) {
 		$scope.game.state = 'ERROR';
 		$scope.game.error = 'You have been disconnected!';
+		$scope.$apply();
 	}
 	
 	// Start the STOMP service
@@ -103,8 +103,8 @@ triviaControllers.controller('AppCtrl', function($scope, $log, $http, $document,
 	                ];
 		
 		// Explode the piece representing the correct answer
-		var correctAnswerIdx = $scope.msg.question.correctAnswer.charCodeAt(0) - 'A'.charCodeAt(0);
-		data[correctAnswerIdx].pie = { explode: 20 };
+//		var correctAnswerIdx = $scope.msg.question.correctAnswer.charCodeAt(0) - 'A'.charCodeAt(0);
+//		data[correctAnswerIdx].pie = { explode: 20 };
 		
 		$('#chart').width($('#chart').parent().width());
 		

@@ -4,7 +4,14 @@ import java.util.List;
 import trivia.model.Answer;
 import trivia.model.Question;
 
-public class WaitMessage extends Message {
+/**
+ * The message sent to the STOMP clients when the time allotted to
+ * answer the current question has expired. 
+ *
+ * This contains information about the guesses that have been
+ * recieved as well as the original question.
+ */
+public class TimesUpMessage extends Message {
 
     private List<Answer> answers;
 
@@ -12,8 +19,8 @@ public class WaitMessage extends Message {
 
     private int[] guesses = {0, 0, 0, 0};
 
-    public WaitMessage(Question q, List<Answer> answers) {
-        super("WAIT");
+    public TimesUpMessage(Question q, List<Answer> answers) {
+        super("TIME_UP");
         this.answers = answers;
         this.question = q;
         calc();

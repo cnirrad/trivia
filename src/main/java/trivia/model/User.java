@@ -1,5 +1,6 @@
 package trivia.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,6 +13,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
+    @Column(unique=true)
     private String name;
 
     private String token;
@@ -58,6 +60,21 @@ public class User {
 
     public void addScore(long p) {
         this.score = this.score + p;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj instanceof User) {
+            User other = (User)obj;
+            if (name.equals(other.name)) {
+                return true;
+            }
+            
+        }
+        return false;
     }
 
     @Override

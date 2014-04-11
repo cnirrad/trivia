@@ -25,8 +25,8 @@ public class Message {
     public static Message fromGame(Game g) {
         if (g.getState() == State.QUESTION) {
             return new TriviaMessage(g.getCurrentQuestion());
-        } else if (g.getState() == State.WAIT) {
-            return new WaitMessage(g.getCurrentQuestion(), g.getAnswers());
+        } else if (g.getState() == State.TIME_UP) {
+            return new TimesUpMessage(g.getCurrentQuestion(), g.getAnswers());
         } else {
             return new Message(g.getState().toString());
         }

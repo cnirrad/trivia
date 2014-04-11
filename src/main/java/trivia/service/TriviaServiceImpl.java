@@ -2,6 +2,7 @@ package trivia.service;
 
 import java.io.IOException;
 import java.util.List;
+
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
@@ -13,9 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
+
 import trivia.exception.GameAlreadyStartedException;
+import trivia.messages.FinishedMessage;
 import trivia.messages.GuessResponseMessage;
 import trivia.messages.Message;
+import trivia.messages.RevealMessage;
 import trivia.model.Answer;
 import trivia.model.Game;
 import trivia.model.GameEntity;
@@ -39,6 +43,8 @@ import trivia.repository.UserRepository;
 public class TriviaServiceImpl implements TriviaService {
 
     private static final Logger logger = LoggerFactory.getLogger(TriviaServiceImpl.class);
+    
+    private int MAX_POINTS = 20;
 
     @Autowired
     private GameRepository gameRepository;
@@ -99,9 +105,12 @@ public class TriviaServiceImpl implements TriviaService {
             presentNextQuestion();
             break;
         case QUESTION:
-            presentWaitForQuestion();
+            presentTimeUp();
             break;
-        case WAIT:
+        case TIME_UP:
+            presentReveal();
+            break;
+        case REVEAL:
             presentNextQuestion();
             break;
         case FINISH:
@@ -117,35 +126,38 @@ public class TriviaServiceImpl implements TriviaService {
         if (q == null) {
             // End of the game!
             game.setState(State.FINISH);
-            broadCastGameState();
+            List<User> users = userRepository.findAllExceptAdmin();
+            FinishedMessage msg = new FinishedMessage(users);
+            
+            messaging.convertAndSend("/topic/trivia", msg);
         } else {
             // Broadcast the question
             game.setState(State.QUESTION);
             broadCastGameState();
+        
+            game.setQuestionAskedAt(DateTime.now());
+    
+            DateTime questionEnd = DateTime.now().plus(Period.seconds(game.getNumSecondsPerQuestion()));
+            logger.debug("Time is up at: " + questionEnd.toString());
+    
+            taskScheduler.schedule(new Runnable() {
+    
+                @Override
+                public void run() {
+                    logger.debug("Time is up!");
+                    goToNextState();
+                }
+    
+            }, questionEnd.toDate());
         }
-        game.setQuestionAskedAt(DateTime.now());
-
-        DateTime questionEnd = DateTime.now().plus(Period.seconds(game.getNumSecondsPerQuestion()));
-        logger.debug("Time is up at: " + questionEnd.toString());
-
-        taskScheduler.schedule(new Runnable() {
-
-            @Override
-            public void run() {
-                logger.debug("Time is up!");
-                goToNextState();
-            }
-
-        }, questionEnd.toDate());
-
         gameRepository.save(game.getEntity());
     }
 
     /**
      * Set the state to WAIT and broadcast to the users.
      */
-    protected void presentWaitForQuestion() {
-        game.setState(State.WAIT);
+    protected void presentTimeUp() {
+        game.setState(State.TIME_UP);
 
         List<Answer> answers = answerRepository.findByQuestion(game.getCurrentQuestion());
         game.setAnswers(answers);
@@ -153,6 +165,14 @@ public class TriviaServiceImpl implements TriviaService {
         broadCastGameState();
         game.setNextStateTime(DateTime.now().plus(Period.seconds(game.getNumSecondsBetweenQuestions())));
         gameRepository.save(game.getEntity());
+    }
+    
+    protected void presentReveal() {
+        game.setState(State.REVEAL);
+        
+        List<Answer> answers = answerRepository.findByQuestion(game.getCurrentQuestion());
+        RevealMessage msg = new RevealMessage(answers);
+        messaging.convertAndSend("/topic/trivia", msg);
     }
 
     /**
@@ -221,15 +241,21 @@ public class TriviaServiceImpl implements TriviaService {
             response.setPoints(score);
         }
 
-        Answer a = new Answer(q, user, guessedIn.getMillis(), answer);
+        Answer a = new Answer(q, user, guessedIn.getMillis(), answer, response.getPoints());
         answerRepository.save(a);
 
         return response;
     }
 
     private int score(Duration d) {
-        // TODO: Determine how many points to assign based on how long it took them to answer.
-        return 5;
+        // Award full points if within 3 seconds.
+        if (d.getStandardSeconds() < 3) {
+            return MAX_POINTS;
+        }
+        
+        int points = (int) (MAX_POINTS - d.getStandardSeconds());
+        return points;
+
     }
 
     /*

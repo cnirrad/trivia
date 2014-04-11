@@ -24,15 +24,18 @@ public class Answer {
     
     private String answer;
     
+    private int points;
+    
     public Answer() {
         
     }
     
-    public Answer(Question q, User u, long ms, String answer) {
+    public Answer(Question q, User u, long ms, String answer, int points) {
         this.question = q;
         this.user = u;
         this.milliseconds = ms;
         this.answer = answer;
+        this.points = points;
     }
 
     public long getId() {
@@ -55,5 +58,7 @@ public class Answer {
         return answer;
     }
     
-    
+    public int getPoints() {
+        return points;
+    }
 }
